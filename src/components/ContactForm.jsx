@@ -1,73 +1,145 @@
 import React, { useState } from 'react';
+import { createContactReport } from '../lib/supabase/contacts';
+import { uploadMultipleImages } from '../lib/cloudinary/upload';
+import { sendContactEmail } from '../lib/emailjs/send';
 
-const ContactForm = ({ setIsAdmin }) => {
+const ContactForm = () => {
     const [formData, setFormData] = useState({
         name: '',
         surname: '',
         email: '',
         phone: '',
-        description: '',
-        password: '', // Hidden field for admin
-        image: null
+        description: ''
     });
 
-    const [showPassword, setShowPassword] = useState(false);
+    const [images, setImages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const handleChange = (e) => {
-        const { name, value, files } = e.target;
-
-        if (name === 'image') {
-            setFormData(prev => ({ ...prev, image: files[0] }));
-            return;
-        }
-
+        const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
-
-        if (name === 'email') {
-            if (value === 'andiamooltre@gmail.com') {
-                setShowPassword(true);
-            } else {
-                setShowPassword(false);
-            }
-        }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
 
-        // Admin Login Logic - Bypass other validation if email matches
-        if (formData.email === 'andiamooltre@gmail.com') {
-            if (formData.password === 'Password123?') {
-                if (setIsAdmin) {
-                    setIsAdmin(true);
-                    alert("Ora sei un Admin");
-                    setFormData({ ...formData, password: '' });
-                    setShowPassword(false);
-                }
-            } else {
-                alert("Password errata!");
-            }
-            return; // Stop here, don't submit the contact form
+        // Max 3 images
+        if (images.length + files.length > 3) {
+            alert('Puoi caricare massimo 3 immagini!');
+            return;
         }
 
-        console.log('Form submitted:', formData);
-        alert('Grazie per averci contattato! Ti risponderemo presto.');
-        setFormData({
-            name: '',
-            surname: '',
-            email: '',
-            phone: '',
-            description: '',
-            password: '',
-            image: null
-        });
-        setShowPassword(false);
+        setImages(prev => [...prev, ...files].slice(0, 3));
+    };
+
+    const removeImage = (index) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // 🔐 HIDDEN ADMIN LOGIN
+        // If name = "oltreperlaterza@gmail.com" and surname = admin password, login as admin
+        if (formData.name.trim() === 'oltreperlaterza@gmail.com' && formData.surname.trim()) {
+            setLoading(true);
+
+            try {
+                const { signIn } = await import('../lib/supabase/auth');
+                const { data, error } = await signIn(formData.name, formData.surname);
+
+                if (error) {
+                    alert('Credenziali admin non valide.');
+                    setLoading(false);
+                    return;
+                }
+
+                // Success! Redirect to admin
+                alert('Accesso admin effettuato! Sarai reindirizzato...');
+                window.location.href = '/admin';
+                return;
+            } catch (error) {
+                console.error('Admin login error:', error);
+                alert('Errore durante il login admin.');
+                setLoading(false);
+                return;
+            }
+        }
+
+        // Validate description is not empty
+        if (!formData.description.trim()) {
+            alert('Il messaggio è obbligatorio!');
+            return;
+        }
+
+        setLoading(true);
+        setSuccess(false);
+
+        try {
+            // 1. Upload images to Cloudinary if present
+            let imageUrls = [];
+            if (images.length > 0) {
+                const { urls, error } = await uploadMultipleImages(images);
+                if (error) {
+                    alert('Errore durante il caricamento delle immagini. Riprova.');
+                    setLoading(false);
+                    return;
+                }
+                imageUrls = urls;
+            }
+
+            // 2. Save contact report to Supabase
+            const { data, error } = await createContactReport({
+                name: formData.name.trim() || null,
+                surname: formData.surname.trim() || null,
+                email: formData.email.trim() || null,
+                phone: formData.phone.trim() || null,
+                description: formData.description.trim(),
+                images: imageUrls
+            });
+
+            if (error) {
+                alert('Errore durante l\'invio della segnalazione. Riprova.');
+                setLoading(false);
+                return;
+            }
+
+            // 3. Send email notification via EmailJS
+            const { success: emailSuccess, error: emailError } = await sendContactEmail(formData, imageUrls);
+
+            if (emailError) {
+                console.warn('Email notification failed:', emailError);
+                // Don't stop the process, email is optional
+            }
+
+            // Success!
+            setSuccess(true);
+            alert('Grazie per averci contattato! Ti risponderemo presto.');
+
+            // Reset form
+            setFormData({
+                name: '',
+                surname: '',
+                email: '',
+                phone: '',
+                description: ''
+            });
+            setImages([]);
+
+        } catch (error) {
+            console.error('Unexpected error:', error);
+            alert('Si è verificato un errore. Riprova.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
+
         <div className="container py-12">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {/* Contact Form Section */}
@@ -130,55 +202,77 @@ const ContactForm = ({ setIsAdmin }) => {
                             </div>
                         </div>
 
-                        {showPassword && (
-                            <div className="flex flex-col animate-fade-in">
-                                <label htmlFor="password" className="mb-2 font-medium text-red-500">Password Admin</label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="Inserisci password admin..."
-                                    className="p-3 bg-red-50 border border-red-200 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all outline-none"
-                                />
-                            </div>
-                        )}
-
                         <div className="flex flex-col">
-                            <label htmlFor="description" className="mb-2 font-medium text-gray-700">Descrizione del problema / Segnalazione</label>
+                            <label htmlFor="description" className="mb-2 font-medium text-gray-700">
+                                Descrizione del problema / Segnalazione <span className="text-red-500">*</span>
+                            </label>
                             <textarea
                                 id="description"
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
                                 rows="5"
+                                required
                                 className="p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all outline-none resize-none"
                                 placeholder="Scrivi qui il tuo messaggio..."
                             ></textarea>
                         </div>
 
                         <div className="flex flex-col">
-                            <label htmlFor="image" className="mb-2 font-medium text-gray-700">Carica un'immagine (opzionale)</label>
+                            <label htmlFor="images" className="mb-2 font-medium text-gray-700">
+                                Carica immagini (opzionale - max 3)
+                            </label>
                             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-accent transition-colors text-center cursor-pointer bg-gray-50">
                                 <input
                                     type="file"
-                                    id="image"
-                                    name="image"
+                                    id="images"
+                                    name="images"
                                     accept="image/*"
-                                    onChange={handleChange}
+                                    multiple
+                                    onChange={handleImageChange}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
                                 <div className="text-gray-500">
                                     <span className="text-accent font-medium">Clicca per caricare</span> o trascina qui
+                                    <p className="text-sm mt-1">Massimo 3 immagini</p>
                                 </div>
-                                {formData.image && <p className="mt-2 text-sm text-green-600 font-medium">File selezionato: {formData.image.name}</p>}
                             </div>
+
+                            {/* Image Previews */}
+                            {images.length > 0 && (
+                                <div className="mt-4 grid grid-cols-3 gap-3">
+                                    {images.map((image, index) => (
+                                        <div key={index} className="relative group">
+                                            <img
+                                                src={URL.createObjectURL(image)}
+                                                alt={`Preview ${index + 1}`}
+                                                className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(index)}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                ×
+                                            </button>
+                                            <p className="text-xs text-gray-500 mt-1 truncate">{image.name}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
-                        <button type="submit" className="btn-primary mt-4 w-full md:w-auto md:self-start">
-                            Invia Segnalazione
+                        <button
+                            type="submit"
+                            className="btn-primary mt-4 w-full md:w-auto md:self-start"
+                            disabled={loading}
+                        >
+                            {loading ? '⏳ Invio in corso...' : 'Invia Segnalazione'}
                         </button>
+
+                        <p className="text-sm text-gray-500 mt-2">
+                            <span className="text-red-500">*</span> Solo il messaggio è obbligatorio. Gli altri campi sono facoltativi.
+                        </p>
                     </form>
                 </div>
 

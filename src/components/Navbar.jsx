@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { signOut } from '../lib/supabase/auth';
 
 const Navbar = ({ isAdmin }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +13,11 @@ const Navbar = ({ isAdmin }) => {
     const closeMenu = () => setIsOpen(false);
 
     const isActive = (path) => location.pathname === path;
+
+    const handleLogout = async () => {
+        await signOut();
+        window.location.href = '/';
+    };
 
     return (
         <nav className="sticky top-0 z-[999] bg-white/95 backdrop-blur-lg shadow-soft border-b border-gray-100">
@@ -31,8 +37,8 @@ const Navbar = ({ isAdmin }) => {
                             <Link
                                 to="/"
                                 className={`text-sm font-semibold py-2 px-4 rounded-lg transition-all ${isActive('/')
-                                        ? 'text-accent bg-accent/10'
-                                        : 'text-gray-700 hover:text-accent hover:bg-gray-50'
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:text-accent hover:bg-gray-50'
                                     }`}
                                 onClick={closeMenu}
                             >
@@ -43,8 +49,8 @@ const Navbar = ({ isAdmin }) => {
                             <Link
                                 to="/proposte"
                                 className={`text-sm font-semibold py-2 px-4 rounded-lg transition-all ${isActive('/proposte')
-                                        ? 'text-accent bg-accent/10'
-                                        : 'text-gray-700 hover:text-accent hover:bg-gray-50'
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:text-accent hover:bg-gray-50'
                                     }`}
                                 onClick={closeMenu}
                             >
@@ -55,8 +61,8 @@ const Navbar = ({ isAdmin }) => {
                             <Link
                                 to="/membri"
                                 className={`text-sm font-semibold py-2 px-4 rounded-lg transition-all ${isActive('/membri')
-                                        ? 'text-accent bg-accent/10'
-                                        : 'text-gray-700 hover:text-accent hover:bg-gray-50'
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:text-accent hover:bg-gray-50'
                                     }`}
                                 onClick={closeMenu}
                             >
@@ -67,8 +73,8 @@ const Navbar = ({ isAdmin }) => {
                             <Link
                                 to="/contatti"
                                 className={`text-sm font-semibold py-2 px-4 rounded-lg transition-all ${isActive('/contatti')
-                                        ? 'text-accent bg-accent/10'
-                                        : 'text-gray-700 hover:text-accent hover:bg-gray-50'
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:text-accent hover:bg-gray-50'
                                     }`}
                                 onClick={closeMenu}
                             >
@@ -82,8 +88,8 @@ const Navbar = ({ isAdmin }) => {
                                     <Link
                                         to="/admin"
                                         className={`text-sm font-semibold py-2 px-4 rounded-lg transition-all ${isActive('/admin')
-                                                ? 'text-red-500 bg-red-50'
-                                                : 'text-red-500 hover:bg-red-50'
+                                            ? 'text-red-500 bg-red-50'
+                                            : 'text-red-500 hover:bg-red-50'
                                             }`}
                                         onClick={closeMenu}
                                     >
@@ -93,7 +99,7 @@ const Navbar = ({ isAdmin }) => {
                                 <li>
                                     <button
                                         className="bg-red-50 text-red-500 py-2 px-5 rounded-full text-sm font-bold hover:bg-red-500 hover:text-white transition-all hover:-translate-y-0.5 shadow-soft hover:shadow-hover"
-                                        onClick={() => window.location.reload()}
+                                        onClick={handleLogout}
                                     >
                                         Esci da Admin
                                     </button>
@@ -121,8 +127,8 @@ const Navbar = ({ isAdmin }) => {
                             <Link
                                 to="/"
                                 className={`block py-3 px-4 rounded-lg font-semibold transition-all ${isActive('/')
-                                        ? 'text-accent bg-accent/10'
-                                        : 'text-gray-700 hover:bg-gray-50'
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:bg-gray-50'
                                     }`}
                                 onClick={closeMenu}
                             >
@@ -133,8 +139,8 @@ const Navbar = ({ isAdmin }) => {
                             <Link
                                 to="/proposte"
                                 className={`block py-3 px-4 rounded-lg font-semibold transition-all ${isActive('/proposte')
-                                        ? 'text-accent bg-accent/10'
-                                        : 'text-gray-700 hover:bg-gray-50'
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:bg-gray-50'
                                     }`}
                                 onClick={closeMenu}
                             >
@@ -145,8 +151,8 @@ const Navbar = ({ isAdmin }) => {
                             <Link
                                 to="/membri"
                                 className={`block py-3 px-4 rounded-lg font-semibold transition-all ${isActive('/membri')
-                                        ? 'text-accent bg-accent/10'
-                                        : 'text-gray-700 hover:bg-gray-50'
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:bg-gray-50'
                                     }`}
                                 onClick={closeMenu}
                             >
@@ -157,8 +163,8 @@ const Navbar = ({ isAdmin }) => {
                             <Link
                                 to="/contatti"
                                 className={`block py-3 px-4 rounded-lg font-semibold transition-all ${isActive('/contatti')
-                                        ? 'text-accent bg-accent/10'
-                                        : 'text-gray-700 hover:bg-gray-50'
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:bg-gray-50'
                                     }`}
                                 onClick={closeMenu}
                             >
@@ -172,8 +178,8 @@ const Navbar = ({ isAdmin }) => {
                                     <Link
                                         to="/admin"
                                         className={`block py-3 px-4 rounded-lg font-semibold transition-all ${isActive('/admin')
-                                                ? 'text-red-500 bg-red-50'
-                                                : 'text-red-500 hover:bg-red-50'
+                                            ? 'text-red-500 bg-red-50'
+                                            : 'text-red-500 hover:bg-red-50'
                                             }`}
                                         onClick={closeMenu}
                                     >
@@ -183,7 +189,7 @@ const Navbar = ({ isAdmin }) => {
                                 <li className="pt-2">
                                     <button
                                         className="w-full bg-red-50 text-red-500 py-3 px-4 rounded-lg font-bold hover:bg-red-500 hover:text-white transition-all"
-                                        onClick={() => window.location.reload()}
+                                        onClick={handleLogout}
                                     >
                                         Esci da Admin
                                     </button>
