@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createContactReport } from '../lib/supabase/contacts';
 import { uploadMultipleImages } from '../lib/cloudinary/upload';
 import { sendContactEmail } from '../lib/emailjs/send';
+import { getContacts } from '../lib/supabase/contacts-info';
 
 const ContactForm = () => {
     const [formData, setFormData] = useState({
@@ -15,6 +16,23 @@ const ContactForm = () => {
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [contacts, setContacts] = useState({
+        phone: '+39 333 999 8888',
+        email: 'info@andiamooltre.it',
+        instagram: '@partito_andiamo_oltre',
+        facebook: 'Partito Andiamo Oltre'
+    });
+
+    // Load contacts from Supabase
+    useEffect(() => {
+        const fetchContacts = async () => {
+            const { data, error } = await getContacts();
+            if (!error && data) {
+                setContacts(data);
+            }
+        };
+        fetchContacts();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -297,7 +315,7 @@ const ContactForm = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-white/80 font-medium uppercase tracking-wider mb-1">Telefono</p>
-                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">+39 333 999 8888</p>
+                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.phone}</p>
                                 </div>
                             </div>
 
@@ -309,7 +327,7 @@ const ContactForm = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-white/80 font-medium uppercase tracking-wider mb-1">Email</p>
-                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">info@andiamooltre.it</p>
+                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.email}</p>
                                 </div>
                             </div>
 
@@ -321,7 +339,7 @@ const ContactForm = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-white/80 font-medium uppercase tracking-wider mb-1">Instagram</p>
-                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">@partito_andiamo_oltre</p>
+                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.instagram}</p>
                                 </div>
                             </div>
 
@@ -333,7 +351,7 @@ const ContactForm = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-white/80 font-medium uppercase tracking-wider mb-1">Facebook</p>
-                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">Partito Andiamo Oltre</p>
+                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.facebook}</p>
                                 </div>
                             </div>
                         </div>

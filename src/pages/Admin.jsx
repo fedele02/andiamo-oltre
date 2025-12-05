@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MemberCard from '../components/MemberCard';
 import NewsCard from '../components/NewsCard';
 import { getContactReports } from '../lib/supabase/contacts';
+import { getContacts, updateContacts } from '../lib/supabase/contacts-info';
 import { createMember } from '../lib/supabase/members';
 import { createNews } from '../lib/supabase/news';
 import { uploadImage, uploadMultipleImages } from '../lib/cloudinary/upload';

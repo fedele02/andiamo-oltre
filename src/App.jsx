@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import ContactForm from './components/ContactForm';
 import Home from './pages/Home';
 import Proposals from './pages/Proposals';
@@ -58,9 +59,7 @@ function App() {
             </Routes>
           </main>
 
-          <footer className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 py-8 text-center mt-auto border-t border-gray-200">
-            <p>&copy; 2025 Partito Andiamo Oltre. Tutti i diritti riservati.</p>
-          </footer>
+          <Footer />
         </div>
       </Router>
     </AppProvider>
