@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { uploadMultipleImages } from '../lib/cloudinary/upload';
 
 const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ ...data });
+  const [isUploading, setIsUploading] = useState(false);
   const carouselRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
 
   // Handle window resize for mobile detection
   useEffect(() => {
@@ -54,9 +57,48 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
     document.body.style.overflow = 'auto';
   };
 
-  const handleSave = () => {
-    onEdit(data.id, editedData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    setIsUploading(true);
+    try {
+      // Identify new files (they have a 'file' property)
+      const newImagesToUpload = editedData.images.filter(img => img.file);
+
+      // Upload new images to Cloudinary
+      let updatedImages = [...editedData.images];
+
+      if (newImagesToUpload.length > 0) {
+        const filesToUpload = newImagesToUpload.map(img => img.file);
+        const { urls, error } = await uploadMultipleImages(filesToUpload);
+
+        if (error) {
+          alert('Errore caricamento immagini: ' + error);
+          setIsUploading(false);
+          return;
+        }
+
+        // Replace local blob URLs with Cloudinary URLs
+        let uploadIndex = 0;
+        updatedImages = updatedImages.map(img => {
+          if (img.file) {
+            const newUrl = urls[uploadIndex];
+            uploadIndex++;
+            return { src: newUrl, alt: img.alt || '' }; // Strip 'file' prop
+          }
+          return img;
+        });
+      }
+
+      const finalData = { ...editedData, images: updatedImages };
+      // Call the parent onEdit with the final data (including new Image URLs)
+      await onEdit(data.id, finalData);
+      setEditedData(finalData); // Update local state to match saved data for UI consistency
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("Errore durante il salvataggio");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleImageDelete = (index) => {
@@ -86,15 +128,68 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
     setEditedData({ ...editedData, videoId: id });
   };
 
-  // Mock drag and drop
-  const handleDrop = (e) => {
+  // --- Drag & Drop for UPLOAD (External) ---
+  const handleFileDrop = (e) => {
     e.preventDefault();
-    alert("Drag & Drop simulato: Immagine aggiunta!");
-    setEditedData({
-      ...editedData,
-      images: [...editedData.images, { src: "https://via.placeholder.com/400", alt: "Nuova immagine" }]
-    });
+    e.stopPropagation();
+
+    // Check if dropping files
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+
+      const newImages = files.map(file => ({
+        src: URL.createObjectURL(file), // Preview URL
+        alt: file.name,
+        file: file // Store actual file for upload later
+      }));
+
+      setEditedData(prev => ({
+        ...prev,
+        images: [...prev.images, ...newImages]
+      }));
+    }
   };
+
+  // --- Drag & Drop for REORDER (Internal) ---
+  const handleDragStart = (e, index) => {
+    setDraggedItemIndex(index);
+    // Required for Firefox
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    // Allow drop
+    e.dataTransfer.dropEffect = 'move';
+
+    // If dragging over another item, handle the reorder visual feedback here potentially
+    // but actual swap happens on Drop for stability, or could be here for live-swap.
+    // Let's implement live-swap if we throttle it, but simple Drop swap is safer first.
+    // Actually, simple drop swap is easier to implement robustly without libs.
+  };
+
+  const handleInternalDrop = (e, targetIndex) => {
+    e.preventDefault();
+    e.stopPropagation(); // Stop bubbling to the container's file drop handler
+
+    if (draggedItemIndex === null || draggedItemIndex === targetIndex) return;
+
+    const newImages = [...editedData.images];
+    const draggedItem = newImages[draggedItemIndex];
+
+    // Remove dragged item
+    newImages.splice(draggedItemIndex, 1);
+    // Insert at new position
+    newImages.splice(targetIndex, 0, draggedItem);
+
+    setEditedData({ ...editedData, images: newImages });
+    setDraggedItemIndex(null);
+  };
+
+  const handleContainerDragOver = (e) => {
+    e.preventDefault(); // Enable drop zone
+  }
+
 
   // Duplicate images ONLY for desktop with > 5 images (not mobile!)
   const displayImages = (!isMobile && editedData.images.length > 5) && !isEditing
@@ -187,7 +282,13 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
                 />
                 <p className="text-xs text-gray-400">Preview: https://www.youtube.com/watch?v={editedData.videoId}</p>
               </div>
-              <button onClick={handleSave} className="bg-gradient-to-br from-[#66CBFF] to-[#4facfe] text-white border-none px-[30px] py-[15px] rounded-[50px] cursor-pointer font-[800] self-start uppercase tracking-[1px] shadow-[0_10px_20px_rgba(102,203,255,0.3)] transition-all hover:-translate-y-[3px] hover:shadow-[0_15px_30px_rgba(102,203,255,0.4)]">Salva Modifiche Card</button>
+              <button
+                onClick={handleSave}
+                disabled={isUploading}
+                className={`bg-gradient-to-br from-[#66CBFF] to-[#4facfe] text-white border-none px-[30px] py-[15px] rounded-[50px] cursor-pointer font-[800] self-start uppercase tracking-[1px] shadow-[0_10px_20px_rgba(102,203,255,0.3)] transition-all hover:-translate-y-[3px] hover:shadow-[0_15px_30px_rgba(102,203,255,0.4)] ${isUploading ? 'opacity-70 cursor-wait' : ''}`}
+              >
+                {isUploading ? 'Salvataggio...' : 'Salva Modifiche Card'}
+              </button>
             </div>
           ) : (
             <p className="text-[1.15rem] leading-[1.9] text-[#555] mb-[40px] font-['Open Sans'] text-left break-words whitespace-pre-wrap w-full">{data.text}</p>
@@ -207,26 +308,40 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
             </div>
 
             <div
-              className={`flex overflow-x-auto gap-[20px] p-[20px_5px] scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-color-[#66CBFF_#f0f0f0] max-[768px]:flex-row max-[768px]:gap-0 max-[768px]:p-[20px_0] max-[768px]:w-full max-[768px]:scrollbar-none ${isEditing ? 'editing-carousel' : ''}`}
+              className={`flex overflow-x-auto gap-[20px] p-[20px_5px] scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-color-[#66CBFF_#f0f0f0] max-[768px]:flex-row max-[768px]:gap-0 max-[768px]:p-[20px_0] max-[768px]:w-full max-[768px]:scrollbar-none ${isEditing ? 'editing-carousel border-2 border-dashed border-gray-300 rounded-xl min-h-[220px] bg-gray-50' : ''}`}
               ref={carouselRef}
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
               onTouchStart={() => setIsPaused(true)}
               onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)} // Resume after 2s
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={isEditing ? handleDrop : null}
+
+              // Only attach File drop check on container if Editing
+              onDragOver={isEditing ? handleContainerDragOver : null}
+              onDrop={isEditing ? handleFileDrop : null}
             >
               {displayImages.map((img, index) => (
-                <div key={`${index}-${img.src}`} className="relative">
-                  <div className="flex-[0_0_250px] h-[180px] rounded-[15px] overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_5px_15px_rgba(0,0,0,0.1)] relative snap-start hover:scale-105 hover:-translate-y-[5px] hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] max-[768px]:flex-[0_0_calc(100vw-40px)] max-[768px]:min-w-[calc(100vw-40px)] max-[768px]:w-[calc(100vw-40px)] max-[768px]:h-[280px] max-[768px]:hover:transform-none" onClick={() => !isEditing && openLightbox(img.src)}>
-                    <img src={img.src} alt={img.alt || `Gallery image ${index + 1}`} className="w-full h-full object-cover transition-transform duration-500 ease hover:scale-110 max-[768px]:hover:transform-none" />
+                <div
+                  key={`${index}-${img.src}`}
+                  className={`relative ${isEditing ? 'cursor-move' : ''}`}
+                  draggable={isEditing}
+                  onDragStart={isEditing ? (e) => handleDragStart(e, index) : null}
+                  onDragOver={isEditing ? (e) => handleDragOver(e, index) : null}
+                  onDrop={isEditing ? (e) => handleInternalDrop(e, index) : null}
+                >
+                  <div className={`flex-[0_0_250px] h-[180px] rounded-[15px] overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_5px_15px_rgba(0,0,0,0.1)] relative snap-start hover:scale-105 hover:-translate-y-[5px] hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] max-[768px]:flex-[0_0_calc(100vw-40px)] max-[768px]:min-w-[calc(100vw-40px)] max-[768px]:w-[calc(100vw-40px)] max-[768px]:h-[280px] max-[768px]:hover:transform-none ${isEditing && draggedItemIndex === index ? 'opacity-50' : ''}`} onClick={() => !isEditing && openLightbox(img.src)}>
+                    <img src={img.src} alt={img.alt || `Gallery image ${index + 1}`} className="w-full h-full object-cover transition-transform duration-500 ease hover:scale-110 max-[768px]:hover:transform-none" draggable="false" />
                   </div>
-                  {isEditing && index < editedData.images.length && (
+                  {isEditing && (
                     <button className="absolute top-[5px] right-[5px] bg-red-600/80 text-white border-none rounded-full w-[25px] h-[25px] cursor-pointer text-[14px] flex items-center justify-center z-[5]" onClick={() => handleImageDelete(index)}>❌</button>
                   )}
                 </div>
               ))}
-              {isEditing && <div className="border-[3px] border-dashed border-[#66CBFF] flex items-center justify-center min-w-[200px] h-[180px] text-[#66CBFF] rounded-[15px] p-[20px] text-center text-[1rem] font-[600] bg-[#66CBFF]/5 cursor-pointer transition-all hover:bg-[#66CBFF]/10">Trascina qui le immagini</div>}
+
+              {isEditing && (
+                <div className="flex-[0_0_200px] border-[3px] border-dashed border-[#66CBFF] flex items-center justify-center min-w-[200px] h-[180px] text-[#66CBFF] rounded-[15px] p-[20px] text-center text-[1rem] font-[600] bg-[#66CBFF]/5 pointer-events-none">
+                  TRASCINA QUI FILE O SPOSTA IMMAGINI
+                </div>
+              )}
             </div>
           </div>
         </div>
