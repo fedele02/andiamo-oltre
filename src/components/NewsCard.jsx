@@ -67,6 +67,7 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
   // Helper to extract YouTube ID
   const getYouTubeId = (url) => {
     if (!url) return '';
+    // Handle standard URLs
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : url;
@@ -74,7 +75,14 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
 
   const handleVideoChange = (e) => {
     const val = e.target.value;
+    // If it looks like a full URL, try to extract ID. 
+    // If it's just an ID (or partial), keep it as is.
+    // Ideally we assume the user pastes a URL or types an ID.
     const id = getYouTubeId(val);
+
+    // We check if the extraction was "clean" (i.e. we found a specific ID from a URL)
+    // If getYouTubeId returns the input string itself, it means it didn't find a match, 
+    // so we treat the input as the potential ID (or just the text user is typing).
     setEditedData({ ...editedData, videoId: id });
   };
 
@@ -153,8 +161,8 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
               </div>
             ) : (
               <>
-                <h2 className="text-3xl text-gray-900 mb-2 font-title font-extrabold leading-tight text-left max-[768px]:text-xl max-[768px]:break-words">{data.title}</h2>
-                <h3 className="text-[1.3rem] text-[#66CBFF] m-0 font-[600] tracking-[0.5px] text-left max-[768px]:text-[0.95rem] max-[768px]:break-words">{data.subtitle}</h3>
+                <h2 className="text-3xl text-gray-900 mb-2 font-title font-extrabold leading-tight text-left break-words w-full">{data.title}</h2>
+                <h3 className="text-[1.3rem] text-[#66CBFF] m-0 font-[600] tracking-[0.5px] text-left break-words w-full">{data.subtitle}</h3>
               </>
             )}
           </div>
@@ -170,18 +178,19 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
                 placeholder="Testo della notizia"
               />
               <div className="flex flex-col gap-[10px]">
-                <label className="font-[600] text-[#333]">YouTube Link (URL completo o ID):</label>
+                <label className="font-[600] text-[#333]">YouTube Video ID o Link:</label>
                 <input
-                  value={`https://www.youtube.com/watch?v=${editedData.videoId}`}
+                  value={editedData.videoId}
                   onChange={handleVideoChange}
-                  placeholder="Incolla qui il link di YouTube"
+                  placeholder="Incolla Link YouTube o ID (es. dQw4w9WgXcQ)"
                   className="p-[10px] border-2 border-[#eee] rounded-[10px] text-[1rem]"
                 />
+                <p className="text-xs text-gray-400">Preview: https://www.youtube.com/watch?v={editedData.videoId}</p>
               </div>
               <button onClick={handleSave} className="bg-gradient-to-br from-[#66CBFF] to-[#4facfe] text-white border-none px-[30px] py-[15px] rounded-[50px] cursor-pointer font-[800] self-start uppercase tracking-[1px] shadow-[0_10px_20px_rgba(102,203,255,0.3)] transition-all hover:-translate-y-[3px] hover:shadow-[0_15px_30px_rgba(102,203,255,0.4)]">Salva Modifiche Card</button>
             </div>
           ) : (
-            <p className="text-[1.15rem] leading-[1.9] text-[#555] mb-[40px] font-['Open Sans'] text-left">{data.text}</p>
+            <p className="text-[1.15rem] leading-[1.9] text-[#555] mb-[40px] font-['Open Sans'] text-left break-words whitespace-pre-wrap w-full">{data.text}</p>
           )}
 
           <div className="flex flex-col gap-[40px] w-full">

@@ -4,7 +4,7 @@ import { uploadMultipleImages } from '../lib/cloudinary/upload';
 import { sendContactEmail } from '../lib/emailjs/send';
 import { getContacts } from '../lib/supabase/contacts-info';
 
-const ContactForm = () => {
+const ContactForm = ({ isAdmin }) => {
     const [formData, setFormData] = useState({
         name: '',
         surname: '',
@@ -131,7 +131,8 @@ const ContactForm = () => {
 
             if (emailError) {
                 console.warn('Email notification failed:', emailError);
-                // Don't stop the process, email is optional
+                // Inform user about partial success
+                alert(`Segnalazione salvata con successo! Tuttavia, l'invio dell'email di notifica è fallito (Errore: ${emailError}). Controlla la console per i dettagli.`);
             }
 
             // Success!
@@ -153,6 +154,26 @@ const ContactForm = () => {
             alert('Si è verificato un errore. Riprova.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const [isEditingContacts, setIsEditingContacts] = useState(false);
+    const [editedContacts, setEditedContacts] = useState({ ...contacts });
+
+    const handleContactsChange = (e) => {
+        const { name, value } = e.target;
+        setEditedContacts(prev => ({ ...prev, [name]: value }));
+    };
+
+    const saveContacts = async () => {
+        const { updateContacts } = await import('../lib/supabase/contacts-info');
+        const { data, error } = await updateContacts(editedContacts);
+        if (error) {
+            alert('Errore aggiornamento contatti: ' + error);
+        } else {
+            setContacts(editedContacts);
+            setIsEditingContacts(false);
+            alert('Contatti aggiornati!');
         }
     };
 
@@ -297,6 +318,20 @@ const ContactForm = () => {
                 {/* Side Info Section */}
                 <div className="lg:col-span-1">
                     <div className="bg-gradient-to-br from-[#66CBFF] to-[#3faae0] text-white p-8 md:p-10 rounded-2xl shadow-card h-full relative overflow-hidden">
+                        {/* Admin Controls */}
+                        {isAdmin && (
+                            <div className="absolute top-4 right-4 z-20">
+                                {isEditingContacts ? (
+                                    <div className="flex gap-2">
+                                        <button onClick={saveContacts} className="bg-white text-green-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform">💾</button>
+                                        <button onClick={() => setIsEditingContacts(false)} className="bg-white text-red-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform">❌</button>
+                                    </div>
+                                ) : (
+                                    <button onClick={() => setIsEditingContacts(true)} className="bg-white text-[#66CBFF] p-2 rounded-full shadow-lg hover:scale-110 transition-transform">✏️</button>
+                                )}
+                            </div>
+                        )}
+
                         {/* Decorative Circle */}
                         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/20 rounded-full blur-3xl"></div>
                         <div className="absolute bottom-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
@@ -307,6 +342,7 @@ const ContactForm = () => {
                         </p>
 
                         <div className="flex flex-col gap-8 relative z-10">
+                            {/* Phone */}
                             <div className="flex items-start gap-4">
                                 <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center text-white shrink-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -315,10 +351,20 @@ const ContactForm = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-white/80 font-medium uppercase tracking-wider mb-1">Telefono</p>
-                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.phone}</p>
+                                    {isEditingContacts ? (
+                                        <input
+                                            name="phone"
+                                            value={editedContacts.phone}
+                                            onChange={handleContactsChange}
+                                            className="text-black p-1 rounded w-full"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.phone}</p>
+                                    )}
                                 </div>
                             </div>
 
+                            {/* Email */}
                             <div className="flex items-start gap-4">
                                 <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center text-white shrink-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -327,10 +373,20 @@ const ContactForm = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-white/80 font-medium uppercase tracking-wider mb-1">Email</p>
-                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.email}</p>
+                                    {isEditingContacts ? (
+                                        <input
+                                            name="email"
+                                            value={editedContacts.email}
+                                            onChange={handleContactsChange}
+                                            className="text-black p-1 rounded w-full"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.email}</p>
+                                    )}
                                 </div>
                             </div>
 
+                            {/* Instagram */}
                             <div className="flex items-start gap-4">
                                 <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center text-white shrink-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -339,10 +395,20 @@ const ContactForm = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-white/80 font-medium uppercase tracking-wider mb-1">Instagram</p>
-                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.instagram}</p>
+                                    {isEditingContacts ? (
+                                        <input
+                                            name="instagram"
+                                            value={editedContacts.instagram}
+                                            onChange={handleContactsChange}
+                                            className="text-black p-1 rounded w-full"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.instagram}</p>
+                                    )}
                                 </div>
                             </div>
 
+                            {/* Facebook */}
                             <div className="flex items-start gap-4">
                                 <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center text-white shrink-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -351,7 +417,16 @@ const ContactForm = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-white/80 font-medium uppercase tracking-wider mb-1">Facebook</p>
-                                    <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.facebook}</p>
+                                    {isEditingContacts ? (
+                                        <input
+                                            name="facebook"
+                                            value={editedContacts.facebook}
+                                            onChange={handleContactsChange}
+                                            className="text-black p-1 rounded w-full"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.facebook}</p>
+                                    )}
                                 </div>
                             </div>
                         </div>

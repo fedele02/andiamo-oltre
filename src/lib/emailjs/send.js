@@ -11,6 +11,19 @@ const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
  * @returns {Promise<{success, error}>}
  */
 export async function sendContactEmail(formData, imageUrls = []) {
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+
+    if (!serviceId || !templateId || !publicKey) {
+        console.error('EmailJS Error: Missing environment variables. Check .env file.', {
+            serviceId: !!serviceId,
+            templateId: !!templateId,
+            publicKey: !!publicKey
+        });
+        return { success: false, error: 'Configuration missing' };
+    }
+
     try {
         // Genera HTML per le immagini
         let imagesHtml = '';
@@ -44,20 +57,21 @@ export async function sendContactEmail(formData, imageUrls = []) {
             from_email: formData.email || 'Anonimo',
             phone: formData.phone || 'Non fornito',
             message: formData.description,
-            images_html: imagesHtml  // ← NUOVA variabile
+            images_html: imagesHtml
         };
 
         const response = await emailjs.send(
-            import.meta.env.VITE_EMAILJS_SERVICE_ID,
-            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+            serviceId,
+            templateId,
             templateParams,
-            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+            publicKey
         );
 
+        console.log('Email sent successfully:', response);
         return { success: true, error: null };
     } catch (error) {
-        console.error('EmailJS error:', error);
-        return { success: false, error: error.message };
+        console.error('EmailJS Detailed Error:', error);
+        return { success: false, error: error.message || 'Unknown error' };
     }
 }
 

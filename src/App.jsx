@@ -50,7 +50,7 @@ function App() {
               <Route path="/" element={<Home isAdmin={isAdmin} />} />
               <Route path="/proposte" element={<Proposals isAdmin={isAdmin} />} />
               <Route path="/membri" element={<Members isAdmin={isAdmin} />} />
-              <Route path="/contatti" element={<div id="contact-section"><ContactForm /></div>} />
+              <Route path="/contatti" element={<div id="contact-section"><ContactForm isAdmin={isAdmin} /></div>} />
               <Route path="/login" element={<Login setIsAdmin={setIsAdmin} />} />
               <Route
                 path="/admin"
