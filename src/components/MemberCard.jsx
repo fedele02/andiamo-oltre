@@ -12,8 +12,8 @@ const MemberCard = ({ member, isAdmin, onDelete, onEdit }) => {
     const isPresident = member.is_president || member.role?.trim().toLowerCase() === 'presidente';
 
     return (
-        <div className={`flex flex-col bg-white rounded-[30px] p-10 shadow-[0_10px_40px_rgba(0,0,0,0.05)] relative transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] items-center text-center border border-black/3 h-full hover:-translate-y-[15px] hover:shadow-[0_30px_60px_rgba(102,203,255,0.25)] max-[768px]:flex-col max-[768px]:text-center max-[768px]:p-[30px_20px]
-            ${isPresident ? 'col-span-full flex-row p-20 border-none shadow-[0_20px_60px_rgba(102,203,255,0.15)] mb-[60px] overflow-hidden before:content-[\'\'] before:absolute before:top-0 before:left-0 before:w-full before:h-[10px] before:bg-gradient-to-r before:from-[#66CBFF] before:to-[#4facfe] max-[768px]:p-[40px_20px] max-[768px]:border-b-[5px] max-[768px]:border-b-[#66CBFF]' : ''}`}>
+        <div className={`flex flex-col bg-white rounded-[30px] p-10 shadow-[0_10px_40px_rgba(0,0,0,0.05)] relative transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] items-center text-center border border-black/3 h-full hover:-translate-y-[15px] hover:shadow-[0_30px_60px_rgba(102,203,255,0.25)] max-[768px]:flex-col max-[768px]:text-center max-[768px]:p-[24px_16px]
+            ${isPresident ? 'col-span-full flex-row p-20 border-none shadow-[0_20px_60px_rgba(102,203,255,0.15)] mb-[60px] overflow-hidden before:content-[\'\'] before:absolute before:top-0 before:left-0 before:w-full before:h-[10px] before:bg-gradient-to-r before:from-[#66CBFF] before:to-[#4facfe] max-[768px]:p-[30px_16px] max-[768px]:border-b-[5px] max-[768px]:border-b-[#66CBFF]' : ''}`}>
 
             {isAdmin && (
                 <div className="absolute top-[10px] right-[10px] flex gap-[10px]">
@@ -49,7 +49,7 @@ const MemberCard = ({ member, isAdmin, onDelete, onEdit }) => {
                     </>
                 ) : (
                     <div className="w-full">
-                        <h3 className={`text-gray-900 mb-3 font-extrabold font-title break-words ${isPresident ? 'text-4xl max-[768px]:text-3xl' : 'text-2xl'}`}>{member.name}</h3>
+                        <h3 className={`text-gray-900 mb-3 font-extrabold font-title break-words ${isPresident ? 'text-4xl max-[768px]:text-2xl' : 'text-2xl max-[768px]:text-xl'}`}>{member.name}</h3>
                         <h4 className="text-[#66CBFF] m-[0_0_25px_0] font-[700] uppercase tracking-[2px] text-[0.85rem] break-words">{member.role}</h4>
                         <p className="text-[#555] leading-[1.8] mb-[30px] text-[1rem] font-[400] break-words whitespace-pre-wrap">{member.description}</p>
                     </div>

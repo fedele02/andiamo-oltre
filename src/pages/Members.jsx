@@ -94,7 +94,7 @@ const Members = ({ isAdmin }) => {
 
     return (
         <div className="py-20 px-5 max-w-[1400px] mx-auto">
-            <h1 className="text-center text-gray-900 mb-20 text-5xl font-extrabold font-title relative table mx-auto after:content-[''] after:block after:w-full after:h-[6px] after:bg-accent after:mt-4 after:mx-auto after:rounded-full after:opacity-80">I Nostri Membri</h1>
+            <h1 className="text-center text-gray-900 mb-10 md:mb-20 text-3xl md:text-5xl font-extrabold font-title relative table mx-auto after:content-[''] after:block after:w-full after:h-[6px] after:bg-accent after:mt-4 after:mx-auto after:rounded-full after:opacity-80">I Nostri Membri</h1>
             {sortedMembers.length === 0 ? (
                 <p className="text-center text-gray-500 text-lg">Nessun membro trovato</p>
             ) : (

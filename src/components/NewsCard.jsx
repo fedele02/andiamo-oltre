@@ -198,7 +198,7 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
 
   return (
     <>
-      <article className="bg-white rounded-3xl shadow-card mb-12 overflow-hidden flex flex-col relative transition-all duration-300 border border-gray-100 p-10 card-hover max-[768px]:p-6">
+      <article className="bg-white rounded-3xl shadow-card mb-12 overflow-hidden flex flex-col relative transition-all duration-300 border border-gray-100 p-10 card-hover max-[768px]:p-4">
         {isAdmin && (
           <div className="absolute top-[30px] right-[30px] z-20 flex gap-[15px]">
             <button className="bg-white border-none w-[40px] h-[40px] rounded-full flex items-center justify-center shadow-[0_5px_15px_rgba(0,0,0,0.1)] cursor-pointer transition-all text-[1.2rem] hover:scale-110 hover:shadow-[0_8px_20px_rgba(0,0,0,0.15)]" onClick={() => setIsEditing(!isEditing)}>✏️</button>
@@ -295,54 +295,58 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
           )}
 
           <div className="flex flex-col gap-[40px] w-full">
-            <div className="relative pb-[56.25%] h-0 rounded-[20px] overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.1)] w-full">
-              <iframe
-                className="absolute top-0 left-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${editedData.videoId}`}
-                title="YouTube video player"
-                style={{ border: 0 }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                loading="lazy"
-              ></iframe>
-            </div>
+            {(editedData.videoId || (editedData.videoUrl && getYouTubeId(editedData.videoUrl))) && (
+              <div className="relative pb-[56.25%] h-0 rounded-[20px] overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.1)] w-full">
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${editedData.videoId || getYouTubeId(editedData.videoUrl)}?playsinline=1&rel=0`}
+                  title="YouTube video player"
+                  style={{ border: 0 }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  loading="lazy"
+                ></iframe>
+              </div>
+            )}
 
-            <div
-              className={`flex overflow-x-auto gap-[20px] p-[20px_5px] scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-color-[#66CBFF_#f0f0f0] max-[768px]:flex-row max-[768px]:gap-0 max-[768px]:p-[20px_0] max-[768px]:w-full max-[768px]:scrollbar-none ${isEditing ? 'editing-carousel border-2 border-dashed border-gray-300 rounded-xl min-h-[220px] bg-gray-50' : ''}`}
-              ref={carouselRef}
-              onMouseEnter={() => setIsPaused(true)}
-              onMouseLeave={() => setIsPaused(false)}
-              onTouchStart={() => setIsPaused(true)}
-              onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)} // Resume after 2s
+            {(displayImages && displayImages.length > 0) && (
+              <div
+                className={`flex overflow-x-auto gap-[20px] p-[20px_5px] scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-color-[#66CBFF_#f0f0f0] max-[768px]:flex-row max-[768px]:gap-0 max-[768px]:p-[20px_0] max-[768px]:w-full max-[768px]:scrollbar-none ${isEditing ? 'editing-carousel border-2 border-dashed border-gray-300 rounded-xl min-h-[220px] bg-gray-50' : ''}`}
+                ref={carouselRef}
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+                onTouchStart={() => setIsPaused(true)}
+                onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)} // Resume after 2s
 
-              // Only attach File drop check on container if Editing
-              onDragOver={isEditing ? handleContainerDragOver : null}
-              onDrop={isEditing ? handleFileDrop : null}
-            >
-              {displayImages.map((img, index) => (
-                <div
-                  key={`${index}-${img.src}`}
-                  className={`relative ${isEditing ? 'cursor-move' : ''}`}
-                  draggable={isEditing}
-                  onDragStart={isEditing ? (e) => handleDragStart(e, index) : null}
-                  onDragOver={isEditing ? (e) => handleDragOver(e, index) : null}
-                  onDrop={isEditing ? (e) => handleInternalDrop(e, index) : null}
-                >
-                  <div className={`flex-[0_0_250px] h-[180px] rounded-[15px] overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_5px_15px_rgba(0,0,0,0.1)] relative snap-start hover:scale-105 hover:-translate-y-[5px] hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] max-[768px]:flex-[0_0_calc(100vw-40px)] max-[768px]:min-w-[calc(100vw-40px)] max-[768px]:w-[calc(100vw-40px)] max-[768px]:h-[280px] max-[768px]:hover:transform-none ${isEditing && draggedItemIndex === index ? 'opacity-50' : ''}`} onClick={() => !isEditing && openLightbox(img.src)}>
-                    <img src={img.src} alt={img.alt || `Gallery image ${index + 1}`} className="w-full h-full object-cover transition-transform duration-500 ease hover:scale-110 max-[768px]:hover:transform-none" draggable="false" />
+                // Only attach File drop check on container if Editing
+                onDragOver={isEditing ? handleContainerDragOver : null}
+                onDrop={isEditing ? handleFileDrop : null}
+              >
+                {displayImages.map((img, index) => (
+                  <div
+                    key={`${index}-${img.src}`}
+                    className={`relative ${isEditing ? 'cursor-move' : ''}`}
+                    draggable={isEditing}
+                    onDragStart={isEditing ? (e) => handleDragStart(e, index) : null}
+                    onDragOver={isEditing ? (e) => handleDragOver(e, index) : null}
+                    onDrop={isEditing ? (e) => handleInternalDrop(e, index) : null}
+                  >
+                    <div className={`flex-[0_0_250px] h-[180px] rounded-[15px] overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_5px_15px_rgba(0,0,0,0.1)] relative snap-start hover:scale-105 hover:-translate-y-[5px] hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] max-[768px]:flex-[0_0_85vw] max-[768px]:min-w-[85vw] max-[768px]:w-[85vw] max-[768px]:h-[220px] max-[768px]:hover:transform-none ${isEditing && draggedItemIndex === index ? 'opacity-50' : ''}`} onClick={() => !isEditing && openLightbox(img.src)}>
+                      <img src={img.src} alt={img.alt || `Gallery image ${index + 1}`} className="w-full h-full object-contain bg-gray-50 transition-transform duration-500 ease hover:scale-110 max-[768px]:hover:transform-none" draggable="false" />
+                    </div>
+                    {isEditing && (
+                      <button className="absolute top-[5px] right-[5px] bg-red-600/80 text-white border-none rounded-full w-[25px] h-[25px] cursor-pointer text-[14px] flex items-center justify-center z-[5]" onClick={() => handleImageDelete(index)}>❌</button>
+                    )}
                   </div>
-                  {isEditing && (
-                    <button className="absolute top-[5px] right-[5px] bg-red-600/80 text-white border-none rounded-full w-[25px] h-[25px] cursor-pointer text-[14px] flex items-center justify-center z-[5]" onClick={() => handleImageDelete(index)}>❌</button>
-                  )}
-                </div>
-              ))}
+                ))}
 
-              {isEditing && (
-                <div className="flex-[0_0_200px] border-[3px] border-dashed border-[#66CBFF] flex items-center justify-center min-w-[200px] h-[180px] text-[#66CBFF] rounded-[15px] p-[20px] text-center text-[1rem] font-[600] bg-[#66CBFF]/5 pointer-events-none">
-                  TRASCINA QUI FILE O SPOSTA IMMAGINI
-                </div>
-              )}
-            </div>
+                {isEditing && (
+                  <div className="flex-[0_0_200px] border-[3px] border-dashed border-[#66CBFF] flex items-center justify-center min-w-[200px] h-[180px] text-[#66CBFF] rounded-[15px] p-[20px] text-center text-[1rem] font-[600] bg-[#66CBFF]/5 pointer-events-none">
+                    TRASCINA QUI FILE O SPOSTA IMMAGINI
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </article>

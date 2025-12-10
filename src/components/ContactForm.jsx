@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createContactReport } from '../lib/supabase/contacts';
 import { uploadMultipleImages } from '../lib/cloudinary/upload';
 import { sendContactEmail } from '../lib/emailjs/send';
-import { getContacts } from '../lib/supabase/contacts-info';
+import { useAppData } from '../context/AppContext';
 
 const ContactForm = ({ isAdmin }) => {
     const [formData, setFormData] = useState({
@@ -16,23 +16,13 @@ const ContactForm = ({ isAdmin }) => {
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [contacts, setContacts] = useState({
-        phone: '+39 333 999 8888',
-        email: 'info@andiamooltre.it',
-        instagram: '@partito_andiamo_oltre',
-        facebook: 'Partito Andiamo Oltre'
-    });
+    const { contacts: globalContacts, refreshContacts } = useAppData();
+    const [contacts, setContacts] = useState(globalContacts);
 
-    // Load contacts from Supabase
+    // Sync local state when global state changes (initial load)
     useEffect(() => {
-        const fetchContacts = async () => {
-            const { data, error } = await getContacts();
-            if (!error && data) {
-                setContacts(data);
-            }
-        };
-        fetchContacts();
-    }, []);
+        setContacts(globalContacts);
+    }, [globalContacts]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -171,6 +161,7 @@ const ContactForm = ({ isAdmin }) => {
         if (error) {
             alert('Errore aggiornamento contatti: ' + error);
         } else {
+            await refreshContacts(); // Aggiorna i dati globali
             setContacts(editedContacts);
             setIsEditingContacts(false);
             alert('Contatti aggiornati!');
@@ -182,9 +173,9 @@ const ContactForm = ({ isAdmin }) => {
         <div className="container py-12">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {/* Contact Form Section */}
-                <div className="lg:col-span-2 bg-white p-8 md:p-10 rounded-2xl shadow-card border border-gray-100">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2 font-title">Parla con Noi</h2>
-                    <p className="text-gray-500 mb-8">Hai domande o segnalazioni? Scrivici qui sotto.</p>
+                <div className="lg:col-span-2 bg-white p-5 md:p-10 rounded-2xl shadow-card border border-gray-100">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 font-title">Parla con Noi</h2>
+                    <p className="text-gray-500 mb-4 md:mb-8 text-sm md:text-base">Hai domande o segnalazioni? Scrivici qui sotto.</p>
 
                     <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -317,17 +308,17 @@ const ContactForm = ({ isAdmin }) => {
 
                 {/* Side Info Section */}
                 <div className="lg:col-span-1">
-                    <div className="bg-gradient-to-br from-[#66CBFF] to-[#3faae0] text-white p-8 md:p-10 rounded-2xl shadow-card h-full relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-[#66CBFF] to-[#3faae0] text-white p-6 md:p-10 rounded-2xl shadow-card h-full relative overflow-hidden">
                         {/* Admin Controls */}
                         {isAdmin && (
                             <div className="absolute top-4 right-4 z-20">
                                 {isEditingContacts ? (
                                     <div className="flex gap-2">
-                                        <button onClick={saveContacts} className="bg-white text-green-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform">💾</button>
-                                        <button onClick={() => setIsEditingContacts(false)} className="bg-white text-red-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform">❌</button>
+                                        <button onClick={saveContacts} className="bg-white text-green-600 p-1.5 rounded-full shadow-lg hover:scale-110 transition-transform">💾</button>
+                                        <button onClick={() => setIsEditingContacts(false)} className="bg-white text-red-600 p-1.5 rounded-full shadow-lg hover:scale-110 transition-transform">❌</button>
                                     </div>
                                 ) : (
-                                    <button onClick={() => setIsEditingContacts(true)} className="bg-white text-[#66CBFF] p-2 rounded-full shadow-lg hover:scale-110 transition-transform">✏️</button>
+                                    <button onClick={() => setIsEditingContacts(true)} className="bg-white text-[#66CBFF] p-1.5 rounded-full shadow-lg hover:scale-110 transition-transform">✏️</button>
                                 )}
                             </div>
                         )}
@@ -359,7 +350,9 @@ const ContactForm = ({ isAdmin }) => {
                                             className="text-black p-1 rounded w-full"
                                         />
                                     ) : (
-                                        <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.phone}</p>
+                                        <a href={`https://wa.me/${contacts.phone.replace(/[^0-9]/g, '')}?text=Ciao,%20ho%20bisogno%20di...`} target="_blank" rel="noopener noreferrer" className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer decoration-dotted underline underline-offset-4">
+                                            {contacts.phone}
+                                        </a>
                                     )}
                                 </div>
                             </div>
@@ -381,7 +374,7 @@ const ContactForm = ({ isAdmin }) => {
                                             className="text-black p-1 rounded w-full"
                                         />
                                     ) : (
-                                        <p className="text-lg font-semibold hover:text-white/80 transition-colors cursor-pointer">{contacts.email}</p>
+                                        <p className="text-lg font-semibold cursor-default">{contacts.email}</p>
                                     )}
                                 </div>
                             </div>

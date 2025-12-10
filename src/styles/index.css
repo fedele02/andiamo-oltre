@@ -5,19 +5,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap');
 
 @theme {
-  --color-bg-primary: #f8fafc;
+  --color-bg-primary: #ffffff;
   --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f1f5f9;
+  --color-bg-tertiary: #f8fafc;
 
   --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-light: #94a3b8;
+  --color-text-secondary: #334155;
+  --color-text-light: #64748b;
 
   --color-accent: #66CBFF;
   --color-accent-hover: #3faae0;
-  --color-accent-light: #e0f2fe;
+  --color-accent-light: #ecf8ff;
 
-  --color-border-color: #e2e8f0;
+  --color-border-color: #cbd5e1;
 
   --font-title: 'Montserrat', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -68,7 +68,7 @@
 
 /* Utilities */
 .container {
-  @apply max-w-[1200px] mx-auto px-6;
+  @apply max-w-[1200px] mx-auto px-4 md:px-6;
 }
 
 .glass-panel {
@@ -103,7 +103,7 @@
 }
 
 body {
-  @apply bg-bg-primary text-text-primary font-body antialiased;
+  @apply bg-bg-primary text-text-primary font-body antialiased text-sm md:text-base;
 }
 
 h1,

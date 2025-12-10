@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logo from '../assets/logo.jpg';
+import logo from '../assets/logo.png';
 
 const Home = ({ isAdmin }) => {
     const [description, setDescription] = useState(`
@@ -24,8 +24,8 @@ const Home = ({ isAdmin }) => {
 
     return (
         <div className="flex flex-col items-center p-0 bg-transparent w-full">
-            <div className="w-full min-h-[60vh] flex justify-center items-center bg-transparent relative mb-10 pt-[60px]">
-                <img src={logo} alt="Logo Partito" className="w-[350px] h-[350px] rounded-full object-cover border-[10px] border-white shadow-[0_20px_60px_rgba(102,203,255,0.3)] transition-transform duration-500 animate-float" />
+            <div className="w-full min-h-[35vh] md:min-h-[60vh] flex justify-center items-center bg-transparent relative mb-6 md:mb-10 pt-8 md:pt-[60px]">
+                <img src={logo} alt="Logo Partito" className="w-[240px] h-[240px] md:w-[350px] md:h-[350px] rounded-full object-cover shadow-[0_10px_30px_rgba(102,203,255,0.3)] transition-transform duration-500 animate-float" />
             </div>
 
             <div className="max-w-[1000px] text-center relative px-10 pb-[100px] mx-auto">

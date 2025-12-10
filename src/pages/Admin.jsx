@@ -250,12 +250,14 @@ const Admin = ({ isAdmin }) => {
     };
 
     return (
-        <div className="py-10 px-5 max-w-[1000px] mx-auto">
-            <h1 className="text-center text-[#333] mb-10 text-[2rem] font-bold">Pannello di Controllo Admin</h1>
+        <div className="py-6 px-4 md:py-10 md:px-5 max-w-[1000px] mx-auto">
+            <h1 className="text-center text-[#333] mb-6 md:mb-10 text-2xl md:text-[2rem] font-bold">Pannello di Controllo Admin</h1>
 
             <div className="flex justify-center gap-5 mb-10 flex-wrap">
                 <button
-                    className={`py-[15px] px-[30px] border-2 border-[#66CBFF] bg-white text-[#66CBFF] text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:bg-[#66CBFF] hover:text-white hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'members' ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]' : ''
+                    className={`py-3 px-5 md:py-[15px] md:px-[30px] border-2 border-[#66CBFF] text-base md:text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'members'
+                            ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
+                            : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
                         }`}
                     onClick={() => {
                         setActiveTab('members');
@@ -265,7 +267,9 @@ const Admin = ({ isAdmin }) => {
                     Aggiungi Membri
                 </button>
                 <button
-                    className={`py-[15px] px-[30px] border-2 border-[#66CBFF] bg-white text-[#66CBFF] text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:bg-[#66CBFF] hover:text-white hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'news' ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]' : ''
+                    className={`py-3 px-5 md:py-[15px] md:px-[30px] border-2 border-[#66CBFF] text-base md:text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'news'
+                            ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
+                            : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
                         }`}
                     onClick={() => {
                         setActiveTab('news');
@@ -275,7 +279,9 @@ const Admin = ({ isAdmin }) => {
                     Aggiungi Notizie
                 </button>
                 <button
-                    className={`py-[15px] px-[30px] border-2 border-[#66CBFF] bg-white text-[#66CBFF] text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:bg-[#66CBFF] hover:text-white hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'reports' ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]' : ''
+                    className={`py-3 px-5 md:py-[15px] md:px-[30px] border-2 border-[#66CBFF] text-base md:text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'reports'
+                            ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
+                            : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
                         }`}
                     onClick={() => {
                         setActiveTab('reports');
@@ -289,7 +295,7 @@ const Admin = ({ isAdmin }) => {
             <div className="admin-content">
                 {/* === MEMBERS TAB === */}
                 {activeTab === 'members' && (
-                    <div className="bg-white p-[30px] rounded-[15px] shadow-[0_5px_20px_rgba(0,0,0,0.05)] flex flex-col gap-[15px] max-w-[600px] mx-auto animate-fade-in">
+                    <div className="bg-white p-6 md:p-[30px] rounded-[15px] shadow-[0_5px_20px_rgba(0,0,0,0.05)] flex flex-col gap-[15px] max-w-[600px] mx-auto animate-fade-in">
                         <h3 className="text-xl font-bold">Aggiungi Nuovo Membro</h3>
 
                         <input

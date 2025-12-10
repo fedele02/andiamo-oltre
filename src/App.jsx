@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ContactForm from './components/ContactForm';
@@ -42,29 +42,38 @@ function App() {
   return (
     <AppProvider>
       <Router>
-        <div className="min-h-screen flex flex-col bg-bg-primary text-text-primary light-theme">
-          <Navbar isAdmin={isAdmin} />
-
-          <main className="container mx-auto px-4 flex-grow py-8">
-            <Routes>
-              <Route path="/" element={<Home isAdmin={isAdmin} />} />
-              <Route path="/proposte" element={<Proposals isAdmin={isAdmin} />} />
-              <Route path="/membri" element={<Members isAdmin={isAdmin} />} />
-              <Route path="/contatti" element={<div id="contact-section"><ContactForm isAdmin={isAdmin} /></div>} />
-              <Route path="/login" element={<Login setIsAdmin={setIsAdmin} />} />
-              <Route
-                path="/admin"
-                element={isAdmin ? <Admin isAdmin={isAdmin} /> : <Navigate to="/login" replace />}
-              />
-            </Routes>
-          </main>
-
-          <Footer />
-        </div>
+        <AppContent isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
       </Router>
     </AppProvider>
   );
 }
 
-export default App;
+function AppContent({ isAdmin, setIsAdmin }) {
+  const location = useLocation();
+  // Hide footer on admin and contact pages (using path startsWith to catch sub-routes if any)
+  const showFooter = !['/admin', '/contatti'].some(path => location.pathname.startsWith(path));
 
+  return (
+    <div className="min-h-screen flex flex-col bg-bg-primary text-text-primary light-theme">
+      <Navbar isAdmin={isAdmin} />
+
+      <main className="container mx-auto px-4 flex-grow py-8">
+        <Routes>
+          <Route path="/" element={<Home isAdmin={isAdmin} />} />
+          <Route path="/proposte" element={<Proposals isAdmin={isAdmin} />} />
+          <Route path="/membri" element={<Members isAdmin={isAdmin} />} />
+          <Route path="/contatti" element={<div id="contact-section"><ContactForm isAdmin={isAdmin} /></div>} />
+          <Route path="/login" element={<Login setIsAdmin={setIsAdmin} />} />
+          <Route
+            path="/admin"
+            element={isAdmin ? <Admin isAdmin={isAdmin} /> : <Navigate to="/login" replace />}
+          />
+        </Routes>
+      </main>
+
+      {showFooter && <Footer />}
+    </div>
+  );
+}
+
+export default App;

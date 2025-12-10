@@ -7,6 +7,12 @@ const AppContext = createContext();
 export function AppProvider({ children }) {
     const [members, setMembers] = useState([]);
     const [news, setNews] = useState([]);
+    const [contacts, setContacts] = useState({
+        phone: '',
+        email: '',
+        instagram: '',
+        facebook: ''
+    });
     const [loading, setLoading] = useState(true);
 
     // Fetch data on app mount
@@ -14,9 +20,10 @@ export function AppProvider({ children }) {
         async function loadData() {
             try {
                 // Fetch in parallel
-                const [membersResult, newsResult] = await Promise.all([
+                const [membersResult, newsResult, contactsResult] = await Promise.all([
                     getMembers(),
-                    getNews()
+                    getNews(),
+                    import('../lib/supabase/contacts-info').then(module => module.getContacts())
                 ]);
 
                 if (!membersResult.error && membersResult.data) {
@@ -25,6 +32,10 @@ export function AppProvider({ children }) {
 
                 if (!newsResult.error && newsResult.data) {
                     setNews(newsResult.data);
+                }
+
+                if (!contactsResult.error && contactsResult.data) {
+                    setContacts(contactsResult.data);
                 }
             } catch (error) {
                 console.error('Error loading app data:', error);
@@ -52,12 +63,23 @@ export function AppProvider({ children }) {
         }
     };
 
+    // Function to refresh contacts
+    const refreshContacts = async () => {
+        const { getContacts } = await import('../lib/supabase/contacts-info');
+        const { data, error } = await getContacts();
+        if (!error && data) {
+            setContacts(data);
+        }
+    };
+
     const value = {
         members,
         news,
+        contacts,
         loading,
         refreshMembers,
-        refreshNews
+        refreshNews,
+        refreshContacts
     };
 
     return (

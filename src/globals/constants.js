@@ -26,13 +26,13 @@ export const PLACEHOLDER = {
     news: 'https://via.placeholder.com/400'
 };
 
-// Limiti
+// Limiti per immagin
 export const LIMITS = {
     contactImages: 3,
-    newsImages: Infinity // nessun limite
+    newsImages: Infinity 
 };
 
-// Mesi Abbreviati (Italiano)
+
 export const MONTHS_IT = {
     '01': 'GEN',
     '02': 'FEB',
