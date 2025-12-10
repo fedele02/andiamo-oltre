@@ -8,11 +8,17 @@ const Proposals = ({ isAdmin }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [visibleCount, setVisibleCount] = useState(5);
 
     // Fetch news from Supabase on component mount
     useEffect(() => {
         fetchNews();
     }, []);
+
+    // Reset visible count when search term changes
+    useEffect(() => {
+        setVisibleCount(5);
+    }, [searchTerm]);
 
     const fetchNews = async () => {
         setLoading(true);
@@ -58,6 +64,12 @@ const Proposals = ({ isAdmin }) => {
         news.text.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const visibleNews = filteredNews.slice(0, visibleCount);
+
+    const handleLoadMore = () => {
+        setVisibleCount(prev => prev + 5);
+    };
+
     if (loading) {
         return (
             <section className="max-w-[1000px] mx-auto py-10 px-5 text-center">
@@ -89,15 +101,28 @@ const Proposals = ({ isAdmin }) => {
                     {searchTerm ? 'Nessuna notizia trovata' : 'Nessuna notizia disponibile'}
                 </p>
             ) : (
-                filteredNews.map(news => (
-                    <NewsCard
-                        key={news.id}
-                        data={news}
-                        isAdmin={isAdmin}
-                        onDelete={handleDelete}
-                        onEdit={handleEdit}
-                    />
-                ))
+                <>
+                    {visibleNews.map(news => (
+                        <NewsCard
+                            key={news.id}
+                            data={news}
+                            isAdmin={isAdmin}
+                            onDelete={handleDelete}
+                            onEdit={handleEdit}
+                        />
+                    ))}
+
+                    {visibleCount < filteredNews.length && (
+                        <div className="text-center mt-8">
+                            <button 
+                                onClick={handleLoadMore}
+                                className="bg-[#66CBFF] text-white px-8 py-3 rounded-full font-bold hover:bg-[#3faae0] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                            >
+                                Carica altro
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
         </section>
     );

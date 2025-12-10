@@ -28,6 +28,8 @@ const Members = ({ isAdmin }) => {
                 description: m.description,
                 email: m.email,
                 phone: m.phone,
+                instagram: m.instagram,
+                facebook: m.facebook,
                 image: m.image_url
             }));
             setMembers(transformedData);
@@ -93,7 +95,7 @@ const Members = ({ isAdmin }) => {
         <div className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             {/* Page Header */}
             <div className="flex flex-col gap-3 text-center mb-12 md:mb-16">
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-[#66CBFF]">
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter" style={{ color: '#66CBFF' }}>
                     I Nostri Membri
                 </h1>
                 <p className="text-base md:text-lg font-normal text-gray-500">
