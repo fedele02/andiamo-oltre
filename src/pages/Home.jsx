@@ -25,7 +25,10 @@ const Home = ({ isAdmin }) => {
     return (
         <div className="flex flex-col items-center p-0 bg-transparent w-full">
             <div className="w-full min-h-[35vh] md:min-h-[60vh] flex justify-center items-center bg-transparent relative mb-6 md:mb-10 pt-8 md:pt-[60px]">
-                <img src={logo} alt="Logo Partito" className="w-[240px] h-[240px] md:w-[350px] md:h-[350px] rounded-full object-cover shadow-[0_10px_30px_rgba(102,203,255,0.3)] transition-transform duration-500 animate-float" />
+                {/* Soft Blue Glow behind Logo */}
+                <div className="absolute w-[280px] h-[280px] md:w-[400px] md:h-[400px] bg-[#66CBFF]/30 rounded-full blur-[60px] pointer-events-none z-0"></div>
+                
+                <img src={logo} alt="Logo Partito" className="w-[240px] h-[240px] md:w-[350px] md:h-[350px] rounded-full object-cover shadow-[0_0_50px_rgba(102,203,255,0.6)] transition-transform duration-500 animate-float relative z-10" />
             </div>
 
             <div className="max-w-[1000px] text-center relative px-10 pb-[100px] mx-auto">

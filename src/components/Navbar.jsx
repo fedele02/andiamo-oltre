@@ -20,7 +20,8 @@ const Navbar = ({ isAdmin }) => {
     };
 
     return (
-        <nav className="sticky top-0 z-[999] bg-white/95 backdrop-blur-lg shadow-soft border-b border-gray-100">
+        <nav className="sticky top-0 z-[999] bg-white/95 backdrop-blur-lg shadow-soft border-b border-[#66CBFF]/20">
+            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#66CBFF] to-transparent opacity-50 hidden md:block"></div>
             <div className="container mx-auto px-6">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
@@ -114,9 +115,9 @@ const Navbar = ({ isAdmin }) => {
                         onClick={toggleMenu}
                         aria-label="Toggle menu"
                     >
-                        <span className={`w-6 h-0.5 bg-gray-700 rounded-full transition-all ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-                        <span className={`w-6 h-0.5 bg-gray-700 rounded-full transition-all ${isOpen ? 'opacity-0' : ''}`}></span>
-                        <span className={`w-6 h-0.5 bg-gray-700 rounded-full transition-all ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                        <span className={`w-6 h-0.5 bg-[#66CBFF] rounded-full transition-all ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                        <span className={`w-6 h-0.5 bg-[#66CBFF] rounded-full transition-all ${isOpen ? 'opacity-0' : ''}`}></span>
+                        <span className={`w-6 h-0.5 bg-[#66CBFF] rounded-full transition-all ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
                     </button>
                 </div>
 

@@ -85,21 +85,28 @@
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 15px;
+  height: 15px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #66CBFF;
+  border-radius: 5px;
+  border: 2px solid #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: #3faae0;
+}
+
+/* Global Selection Color */
+::selection {
+  background-color: #66CBFF;
+  color: white;
 }
 
 html,
@@ -110,6 +117,8 @@ body {
 
 body {
   @apply bg-bg-primary text-text-primary font-body antialiased text-sm md:text-base;
+  background: radial-gradient(circle at 50% 0%, rgba(102, 203, 255, 0.08) 0%, rgba(255, 255, 255, 0) 60%), #ffffff;
+  background-attachment: fixed;
 }
 
 h1,
