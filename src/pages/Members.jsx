@@ -62,12 +62,9 @@ const Members = ({ isAdmin }) => {
         }
     };
 
-    // Sort members: President first
-    const sortedMembers = [...members].sort((a, b) => {
-        if (a.role === 'Presidente') return -1;
-        if (b.role === 'Presidente') return 1;
-        return 0;
-    });
+    // Filter Logic: Find President and Council
+    const president = members.find(m => m.is_president || m.role?.trim().toLowerCase() === 'presidente');
+    const council = members.filter(m => m.id !== president?.id); // Everyone else
 
     if (loading) {
         return (
@@ -93,22 +90,54 @@ const Members = ({ isAdmin }) => {
     }
 
     return (
-        <div className="py-20 px-5 max-w-[1400px] mx-auto">
-            <h1 className="text-center text-gray-900 mb-10 md:mb-20 text-3xl md:text-5xl font-extrabold font-title relative table mx-auto after:content-[''] after:block after:w-full after:h-[6px] after:bg-accent after:mt-4 after:mx-auto after:rounded-full after:opacity-80">I Nostri Membri</h1>
-            {sortedMembers.length === 0 ? (
-                <p className="text-center text-gray-500 text-lg">Nessun membro trovato</p>
-            ) : (
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-[50px] items-start">
-                    {sortedMembers.map(member => (
-                        <MemberCard
-                            key={member.id}
-                            member={member}
-                            isAdmin={isAdmin}
-                            onDelete={handleDelete}
-                            onEdit={handleEdit}
-                        />
-                    ))}
-                </div>
+        <div className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            {/* Page Header */}
+            <div className="flex flex-col gap-3 text-center mb-12 md:mb-16">
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-[#66CBFF]">
+                    I Nostri Membri
+                </h1>
+                <p className="text-base md:text-lg font-normal text-gray-500">
+                    Scopri le persone che guidano il nostro partito.
+                </p>
+            </div>
+
+            {/* President Section */}
+            {president && (
+                <section className="mb-16 animate-fade-in">
+                    <MemberCard
+                        key={president.id}
+                        member={president}
+                        isAdmin={isAdmin}
+                        onDelete={handleDelete}
+                        onEdit={handleEdit}
+                        variant="president"
+                    />
+                </section>
+            )}
+
+            {/* Council Section */}
+            {council.length > 0 && (
+                <section className="animate-fade-in animation-delay-200">
+                    {/* <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center md:text-left text-gray-800">
+                        Consiglio Direttivo
+                    </h2> */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {council.map(member => (
+                            <MemberCard
+                                key={member.id}
+                                member={member}
+                                isAdmin={isAdmin}
+                                onDelete={handleDelete}
+                                onEdit={handleEdit}
+                                variant="standard"
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {members.length === 0 && (
+                <p className="text-center text-gray-500 text-lg py-12">Nessun membro trovato</p>
             )}
         </div>
     );

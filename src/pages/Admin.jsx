@@ -256,8 +256,8 @@ const Admin = ({ isAdmin }) => {
             <div className="flex justify-center gap-5 mb-10 flex-wrap">
                 <button
                     className={`py-3 px-5 md:py-[15px] md:px-[30px] border-2 border-[#66CBFF] text-base md:text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'members'
-                            ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
-                            : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
+                        ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
+                        : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
                         }`}
                     onClick={() => {
                         setActiveTab('members');
@@ -268,8 +268,8 @@ const Admin = ({ isAdmin }) => {
                 </button>
                 <button
                     className={`py-3 px-5 md:py-[15px] md:px-[30px] border-2 border-[#66CBFF] text-base md:text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'news'
-                            ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
-                            : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
+                        ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
+                        : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
                         }`}
                     onClick={() => {
                         setActiveTab('news');
@@ -280,8 +280,8 @@ const Admin = ({ isAdmin }) => {
                 </button>
                 <button
                     className={`py-3 px-5 md:py-[15px] md:px-[30px] border-2 border-[#66CBFF] text-base md:text-[1.1rem] font-bold rounded-[30px] cursor-pointer transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_5px_15px_rgba(102,203,255,0.4)] ${activeTab === 'reports'
-                            ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
-                            : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
+                        ? 'bg-[#66CBFF] text-white -translate-y-[3px] shadow-[0_5px_15px_rgba(102,203,255,0.4)]'
+                        : 'bg-white text-[#66CBFF] hover:bg-[#66CBFF] hover:text-white'
                         }`}
                     onClick={() => {
                         setActiveTab('reports');
@@ -520,8 +520,26 @@ const Admin = ({ isAdmin }) => {
                         <h3 className="text-xl font-bold mb-4">Anteprima (Visualizzazione Finale)</h3>
 
                         {previewType === 'member' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto p-[20px] bg-[#f8faff]">
-                                <MemberCard member={previewData} isAdmin={false} />
+                            <div className="w-full max-w-7xl mx-auto p-[20px] bg-[#f8faff]">
+                                {previewData.is_president ? (
+                                    // President Preview: Full Width
+                                    <div className="w-full mb-8">
+                                        <MemberCard
+                                            member={previewData}
+                                            isAdmin={false}
+                                            variant="president"
+                                        />
+                                    </div>
+                                ) : (
+                                    // Standard Member Preview: 2-Column Grid Context
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <MemberCard
+                                            member={previewData}
+                                            isAdmin={false}
+                                            variant="standard"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         )}
 

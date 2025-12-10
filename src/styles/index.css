@@ -102,6 +102,12 @@
   background: var(--accent);
 }
 
+html,
+body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
 body {
   @apply bg-bg-primary text-text-primary font-body antialiased text-sm md:text-base;
 }
