@@ -26,6 +26,8 @@ const Admin = ({ isAdmin }) => {
         description: '',
         email: '',
         phone: '',
+        instagram: '',
+        facebook: '',
         is_president: false
     });
     const [memberImage, setMemberImage] = useState(null);
@@ -128,6 +130,8 @@ const Admin = ({ isAdmin }) => {
                 description: '',
                 email: '',
                 phone: '',
+                instagram: '',
+                facebook: '',
                 is_president: false
             });
             setMemberImage(null);
@@ -319,19 +323,33 @@ const Admin = ({ isAdmin }) => {
                             onChange={(e) => setNewMember({ ...newMember, description: e.target.value })}
                         />
 
-                        <input
-                            className="p-[12px] border border-[#ddd] rounded-[8px]"
-                            placeholder="Email"
-                            value={newMember.email}
-                            onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                        />
-
-                        <input
-                            className="p-[12px] border border-[#ddd] rounded-[8px]"
-                            placeholder="Telefono"
-                            value={newMember.phone}
-                            onChange={(e) => setNewMember({ ...newMember, phone: e.target.value })}
-                        />
+                        {/* Contatti Opzionali */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <input
+                                className="p-[12px] border border-[#ddd] rounded-[8px]"
+                                placeholder="Email (opzionale)"
+                                value={newMember.email}
+                                onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                            />
+                            <input
+                                className="p-[12px] border border-[#ddd] rounded-[8px]"
+                                placeholder="Telefono (opzionale)"
+                                value={newMember.phone}
+                                onChange={(e) => setNewMember({ ...newMember, phone: e.target.value })}
+                            />
+                            <input
+                                className="p-[12px] border border-[#ddd] rounded-[8px]"
+                                placeholder="Instagram (User o Link - opzionale)"
+                                value={newMember.instagram}
+                                onChange={(e) => setNewMember({ ...newMember, instagram: e.target.value })}
+                            />
+                            <input
+                                className="p-[12px] border border-[#ddd] rounded-[8px]"
+                                placeholder="Facebook (User o Link - opzionale)"
+                                value={newMember.facebook}
+                                onChange={(e) => setNewMember({ ...newMember, facebook: e.target.value })}
+                            />
+                        </div>
 
                         {/* FILE UPLOAD */}
                         <div>

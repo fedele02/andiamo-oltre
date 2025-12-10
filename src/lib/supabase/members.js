@@ -57,6 +57,8 @@ export async function createMember(memberData) {
                 description: memberData.description,
                 email: memberData.email,
                 phone: memberData.phone,
+                instagram: memberData.instagram,
+                facebook: memberData.facebook,
                 image_url: memberData.image_url,
                 is_president: memberData.is_president || false,
             }])
@@ -88,6 +90,8 @@ export async function updateMember(id, memberData) {
                 description: memberData.description,
                 email: memberData.email,
                 phone: memberData.phone,
+                instagram: memberData.instagram,
+                facebook: memberData.facebook,
                 image_url: memberData.image_url,
                 is_president: memberData.is_president || false,
                 updated_at: new Date().toISOString(),
