@@ -1,26 +1,44 @@
-import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import logo from '../assets/logo.png';
+import { useAppData } from '../context/AppContext';
+import { updateContent } from '../lib/supabase/content';
 
 const Home = ({ isAdmin }) => {
-    const [description, setDescription] = useState(`
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-        Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
-
-        At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.
-
-        Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.
-    `);
-
+    const { homeDescription, updateHomeDescription } = useAppData();
     const [isEditing, setIsEditing] = useState(false);
-    const [editedDescription, setEditedDescription] = useState(description);
+    const [editedDescription, setEditedDescription] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = () => {
-        setDescription(editedDescription);
-        setIsEditing(false);
+    // Sync local editing state with global state when opening edit mode
+    useEffect(() => {
+        if (isEditing) {
+            setEditedDescription(homeDescription);
+        }
+    }, [isEditing, homeDescription]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            // 1. Update Supabase
+            const { error } = await updateContent('home_description', editedDescription);
+            
+            if (error) {
+                alert('Errore durante il salvataggio: ' + error);
+            } else {
+                // 2. Update Global State (and localStorage)
+                updateHomeDescription(editedDescription);
+                setIsEditing(false);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Errore imprevisto durante il salvataggio');
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    // Fallback text if description is empty (e.g. first load ever)
+    const displayDescription = homeDescription || "Benvenuti su Andiamo Oltre. Nessun contenuto presente.";
 
     return (
         <div className="flex flex-col items-center p-0 bg-transparent w-full">
@@ -31,28 +49,36 @@ const Home = ({ isAdmin }) => {
                 <img src={logo} alt="Logo Partito" className="w-[240px] h-[240px] md:w-[350px] md:h-[350px] rounded-full object-cover shadow-[0_0_50px_rgba(102,203,255,0.6)] transition-transform duration-500 animate-float relative z-10" />
             </div>
 
-            <div className="max-w-[1000px] text-center relative px-10 pb-[100px] mx-auto">
+            <div className={`text-center relative px-4 md:px-10 pb-[100px] mx-auto transition-all duration-300 ${isEditing ? 'w-full max-w-[95vw]' : 'max-w-[1000px]'}`}>
                 {isAdmin && (
                     <button className="absolute -top-[50px] right-5 bg-white border-none text-[#66CBFF] px-6 py-2.5 rounded-[30px] cursor-pointer font-extrabold shadow-md transition-all uppercase tracking-widest hover:-translate-y-[3px] hover:shadow-[0_10px_20px_rgba(102,203,255,0.3)]" onClick={() => setIsEditing(!isEditing)}>
-                        ✏️ Modifica Descrizione
+                        {isEditing ? '❌ Annulla' : '✏️ Modifica Descrizione'}
                     </button>
                 )}
 
                 {isEditing ? (
                     <div className="w-full">
                         <textarea
-                            className="w-full min-h-[500px] p-[30px] border-2 border-[#eee] rounded-[20px] text-[1.1rem] leading-[1.8] mb-5 font-['Open Sans'] shadow-inner focus:outline-none focus:border-[#66CBFF]"
+                            className="w-full h-[60vh] p-[20px] md:p-[30px] border-2 border-[#eee] rounded-[20px] text-[1.1rem] leading-[1.8] mb-5 font-['Open Sans'] shadow-inner focus:outline-none focus:border-[#66CBFF] resize-y"
                             value={editedDescription}
                             onChange={(e) => setEditedDescription(e.target.value)}
                         />
-                        <button className="bg-[#66CBFF] text-white px-8 py-3 rounded-full font-bold hover:bg-[#5bb8e8] transition-colors shadow-md cursor-pointer" onClick={handleSave}>Salva</button>
+                        <button 
+                            className={`bg-[#66CBFF] text-white px-8 py-3 rounded-full font-bold hover:bg-[#5bb8e8] transition-colors shadow-md cursor-pointer ${isSaving ? 'opacity-70 cursor-wait' : ''}`} 
+                            onClick={handleSave}
+                            disabled={isSaving}
+                        >
+                            {isSaving ? 'Salvataggio...' : 'Salva'}
+                        </button>
                     </div>
                 ) : (
                     <div className="text-center">
-                        {description.split('\n').map((paragraph, index) => (
-                            <p key={index} className="text-lg leading-loose text-gray-600 mb-8 text-center font-light font-body first:text-3xl first:font-extrabold first:text-gray-900 first:mb-10 first:font-title first:tracking-tight">
-                                {paragraph}
-                            </p>
+                        {displayDescription.split('\n').map((paragraph, index) => (
+                            paragraph.trim() && (
+                                <p key={index} className="text-lg leading-loose text-gray-600 mb-8 text-center font-light font-body">
+                                    {paragraph}
+                                </p>
+                            )
                         ))}
                     </div>
                 )}

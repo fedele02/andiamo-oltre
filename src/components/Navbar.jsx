@@ -27,9 +27,9 @@ const Navbar = ({ isAdmin }) => {
                     {/* Logo */}
                     <Link
                         to="/"
-                        className="text-accent text-2xl font-extrabold tracking-tight font-title uppercase hover:text-accent-hover transition-colors"
+                        className="font-extrabold tracking-tight font-title uppercase hover:opacity-80 transition-opacity flex items-baseline gap-1"
                     >
-                        ANDIAMO OLTRE
+                        <span className="text-black text-xl">andiamo</span> <span className="text-[#66CBFF] text-3xl">OLTRE...</span>
                     </Link>
 
                     {/* Desktop Menu */}
