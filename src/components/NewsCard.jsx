@@ -1,51 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { uploadMultipleImages } from '../lib/cloudinary/upload';
+import Carousel from './ui/Carousel';
+import Lightbox from './ui/Lightbox';
 
 const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ ...data });
   const [isUploading, setIsUploading] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   
-  // Carousel State
-  const [currentSlide, setCurrentSlide] = useState(0);
-
   // Handle window resize for mobile detection
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Auto-Scroll Logic for Carousel (Mobile & Desktop)
-  useEffect(() => {
-    // Determine if we are in carousel mode
-    const isCarouselMode = (isMobile && editedData.images.length > 0) || (!isMobile && editedData.images.length > 5);
-
-    // Only auto-scroll if in carousel mode, not editing, not paused, and we have > 1 images
-    const shouldScroll = isCarouselMode && !isEditing && !isPaused && editedData.images.length > 1;
-    
-    if (!shouldScroll) return;
-
-    const interval = setInterval(() => {
-        setCurrentSlide(prev => (prev + 1) % editedData.images.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isMobile, isEditing, isPaused, editedData.images.length]);
-
-  const openLightbox = (imgSrc) => {
-    setSelectedImage(imgSrc);
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeLightbox = () => {
-    setSelectedImage(null);
-    document.body.style.overflow = 'auto';
-  };
 
   const handleSave = async () => {
     setIsUploading(true);
@@ -89,9 +59,6 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
   const handleImageDelete = (index) => {
     const newImages = editedData.images.filter((_, i) => i !== index);
     setEditedData({ ...editedData, images: newImages });
-    if (currentSlide >= newImages.length) {
-        setCurrentSlide(Math.max(0, newImages.length - 1));
-    }
   };
 
   const getYouTubeId = (url) => {
@@ -164,14 +131,6 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
   const handleContainerDragOver = (e) => {
     e.preventDefault();
   }
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % editedData.images.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + editedData.images.length) % editedData.images.length);
-  };
 
   // Determine if we should show the Carousel
   // Desktop: > 5 images AND not editing
@@ -271,63 +230,10 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
                 {displayImages && displayImages.length > 0 && (
                     <>
                         {showCarousel ? (
-                            // CAROUSEL VIEW
-                            <div id="indicators-carousel" className="relative w-full" data-carousel="static" 
-                                onMouseEnter={() => setIsPaused(true)}
-                                onMouseLeave={() => setIsPaused(false)}
-                                onTouchStart={() => setIsPaused(true)}
-                                onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)}
-                            >
-                                {/* Carousel wrapper */}
-                                <div className="relative h-56 overflow-hidden rounded-base md:h-96 rounded-[20px]">
-                                    {displayImages.map((img, index) => (
-                                        <div 
-                                            key={index} 
-                                            className={`duration-700 ease-in-out absolute w-full h-full top-0 left-0 transition-opacity ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                                            data-carousel-item={index === currentSlide ? "active" : ""}
-                                        >
-                                            <img 
-                                                src={img.src} 
-                                                className="absolute block w-full h-full object-contain -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" 
-                                                alt={img.alt || `Slide ${index + 1}`} 
-                                                onClick={() => openLightbox(img.src)}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                                
-                                {/* Slider indicators */}
-                                <div className="absolute z-30 flex -translate-x-1/2 space-x-3 rtl:space-x-reverse bottom-5 left-1/2">
-                                    {displayImages.map((_, index) => (
-                                        <button 
-                                            key={index}
-                                            type="button" 
-                                            className={`w-3 h-3 rounded-full ${index === currentSlide ? 'bg-white' : 'bg-white/50'}`} 
-                                            aria-current={index === currentSlide} 
-                                            aria-label={`Slide ${index + 1}`} 
-                                            onClick={() => setCurrentSlide(index)}
-                                        ></button>
-                                    ))}
-                                </div>
-                                
-                                {/* Slider controls */}
-                                <button type="button" className="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" onClick={prevSlide}>
-                                    <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-                                        <svg className="w-4 h-4 text-white rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 1 1 5l4 4"/>
-                                        </svg>
-                                        <span className="sr-only">Previous</span>
-                                    </span>
-                                </button>
-                                <button type="button" className="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" onClick={nextSlide}>
-                                    <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-                                        <svg className="w-4 h-4 text-white rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
-                                        </svg>
-                                        <span className="sr-only">Next</span>
-                                    </span>
-                                </button>
-                            </div>
+                            <Carousel 
+                                images={displayImages} 
+                                onImageClick={setSelectedImage}
+                            />
                         ) : (
                             // STANDARD GRID/SCROLL VIEW (For Edit Mode or Desktop <= 5 images)
                             <div
@@ -344,7 +250,7 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
                                         onDragOver={isEditing ? (e) => handleDragOver(e, index) : null}
                                         onDrop={isEditing ? (e) => handleInternalDrop(e, index) : null}
                                     >
-                                        <div className={`flex-[0_0_250px] h-[180px] rounded-[15px] overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_5px_15px_rgba(0,0,0,0.1)] relative snap-start hover:scale-105 hover:-translate-y-[5px] hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] max-[768px]:flex-[0_0_85vw] max-[768px]:min-w-[85vw] max-[768px]:w-[85vw] max-[768px]:h-[220px] max-[768px]:hover:transform-none ${isEditing && draggedItemIndex === index ? 'opacity-50' : ''}`} onClick={() => !isEditing && openLightbox(img.src)}>
+                                        <div className={`flex-[0_0_250px] h-[180px] rounded-[15px] overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_5px_15px_rgba(0,0,0,0.1)] relative snap-start hover:scale-105 hover:-translate-y-[5px] hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] max-[768px]:flex-[0_0_85vw] max-[768px]:min-w-[85vw] max-[768px]:w-[85vw] max-[768px]:h-[220px] max-[768px]:hover:transform-none ${isEditing && draggedItemIndex === index ? 'opacity-50' : ''}`} onClick={() => !isEditing && setSelectedImage(img.src)}>
                                             <img src={img.src} alt={img.alt || `Gallery image ${index + 1}`} className="w-full h-full object-contain bg-gray-50 transition-transform duration-500 ease hover:scale-110 max-[768px]:hover:transform-none" draggable="false" />
                                         </div>
                                         {isEditing && (
@@ -366,14 +272,11 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
         </div>
       </article>
 
-      {selectedImage && (
-        <div className="fixed top-0 left-0 w-full h-full bg-gray-900/95 z-[2000] flex justify-center items-center animate-fadeIn backdrop-blur-[5px]" onClick={closeLightbox}>
-          <div className="relative max-w-[90%] max-h-[90%] flex justify-center items-center" onClick={e => e.stopPropagation()}>
-            <button className="absolute -top-[50px] -right-[50px] bg-white border-none text-[#333] text-[24px] cursor-pointer w-[40px] h-[40px] rounded-full flex items-center justify-center font-bold transition-all hover:bg-[#ff4757] hover:text-white hover:rotate-90" onClick={closeLightbox}>&times;</button>
-            <img src={selectedImage} alt="Full size" className="max-w-full max-h-[90vh] rounded-[10px] shadow-[0_0_50px_rgba(0,0,0,0.5)] object-contain" />
-          </div>
-        </div>
-      )}
+      <Lightbox 
+        isOpen={!!selectedImage} 
+        imageSrc={selectedImage} 
+        onClose={() => setSelectedImage(null)} 
+      />
     </>
   );
 };

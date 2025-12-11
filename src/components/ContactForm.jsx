@@ -111,7 +111,8 @@ const ContactForm = ({ isAdmin }) => {
             });
 
             if (error) {
-                alert('Errore durante l\'invio della segnalazione. Riprova.');
+                console.error('Supabase error:', error);
+                alert(`Errore durante l'invio della segnalazione: ${error.message || JSON.stringify(error)}. Riprova.`);
                 setLoading(false);
                 return;
             }

@@ -7,7 +7,7 @@ import { supabase } from './client'
  */
 export async function createContactReport(reportData) {
     try {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('contact_reports')
             .insert([{
                 name: reportData.name || null,
@@ -17,12 +17,10 @@ export async function createContactReport(reportData) {
                 description: reportData.description,
                 images: reportData.images || [],
             }])
-            .select()
-            .single()
 
         if (error) throw error
 
-        return { data, error: null }
+        return { data: true, error: null }
     } catch (error) {
         console.error('Error creating contact report:', error)
         return { data: null, error: error.message }
