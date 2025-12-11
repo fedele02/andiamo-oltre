@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { deleteFile, getPublicIdFromUrl } from '../cloudinary/upload'
 
 /**
  * Get all members from database
@@ -82,6 +83,26 @@ export async function createMember(memberData) {
  */
 export async function updateMember(id, memberData) {
     try {
+        // 1. Check if image has changed
+        if (memberData.image_url) {
+            const { data: currentMember, error: fetchError } = await supabase
+                .from('members')
+                .select('image_url')
+                .eq('id', id)
+                .single()
+
+            if (!fetchError && currentMember && currentMember.image_url) {
+                // If there was an image, and it's different from the new one, delete the old one
+                if (currentMember.image_url !== memberData.image_url) {
+                    const publicId = getPublicIdFromUrl(currentMember.image_url, 'image');
+                    if (publicId) {
+                        await deleteFile(publicId, 'image');
+                    }
+                }
+            }
+        }
+
+        // 2. Update Database
         const { data, error } = await supabase
             .from('members')
             .update({
@@ -116,12 +137,28 @@ export async function updateMember(id, memberData) {
  */
 export async function deleteMember(id) {
     try {
+        // 1. Fetch member to get image URL
+        const { data: member, error: fetchError } = await supabase
+            .from('members')
+            .select('image_url')
+            .eq('id', id)
+            .single()
+
+        // 2. Delete from Database
         const { error } = await supabase
             .from('members')
             .delete()
             .eq('id', id)
 
         if (error) throw error
+
+        // 3. Delete image from Cloudinary
+        if (!fetchError && member && member.image_url) {
+            const publicId = getPublicIdFromUrl(member.image_url, 'image');
+            if (publicId) {
+                await deleteFile(publicId, 'image');
+            }
+        }
 
         return { error: null }
     } catch (error) {

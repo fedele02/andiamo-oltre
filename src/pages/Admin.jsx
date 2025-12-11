@@ -5,7 +5,7 @@ import { getContactReports } from '../lib/supabase/contacts';
 import { getContacts, updateContacts } from '../lib/supabase/contacts-info';
 import { createMember } from '../lib/supabase/members';
 import { createNews } from '../lib/supabase/news';
-import { uploadImage, uploadMultipleImages } from '../lib/cloudinary/upload';
+import { uploadImage, uploadMultipleImages, uploadMultipleFiles } from '../lib/cloudinary/upload';
 import { useAppData } from '../context/AppContext';
 
 const Admin = ({ isAdmin }) => {
@@ -49,6 +49,7 @@ const Admin = ({ isAdmin }) => {
     });
     const [newsImages, setNewsImages] = useState([]);
     const [newsImagesPreviews, setNewsImagesPreviews] = useState([]);
+    const [newsFiles, setNewsFiles] = useState([]); // For documents (PDF, Doc, etc.)
 
     // Fetch contact reports
     useEffect(() => {
@@ -156,12 +157,21 @@ const Admin = ({ isAdmin }) => {
 
     // === NEWS HANDLERS ===
     const handleNewsImagesChange = (e) => {
-        const files = Array.from(e.target.files);
-        setNewsImages(files);
+        if (e.target.files && e.target.files.length > 0) {
+            const files = Array.from(e.target.files);
+            setNewsImages(files);
 
-        // Create previews
-        const previews = files.map(file => URL.createObjectURL(file));
-        setNewsImagesPreviews(previews);
+            // Create previews
+            const previews = files.map(file => URL.createObjectURL(file));
+            setNewsImagesPreviews(previews);
+        }
+    };
+
+    const handleNewsFilesChange = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const files = Array.from(e.target.files);
+            setNewsFiles(files);
+        }
     };
 
     const handleDateChange = (e) => {
@@ -198,10 +208,23 @@ const Admin = ({ isAdmin }) => {
                 imageUrls = urls;
             }
 
-            // 2. Save to database
+            // 2. Upload documents to Cloudinary
+            let uploadedFiles = [];
+            if (newsFiles.length > 0) {
+                const { files, error } = await uploadMultipleFiles(newsFiles);
+                if (error) {
+                    alert('Errore durante il caricamento dei documenti: ' + error);
+                    setSaving(false);
+                    return;
+                }
+                uploadedFiles = files;
+            }
+
+            // 3. Save to database
             const newsData = {
                 ...newNews,
-                images: imageUrls.map(url => ({ src: url, alt: newNews.title }))
+                images: imageUrls.map(url => ({ src: url, alt: newNews.title })),
+                files: uploadedFiles
             };
 
             const { data, error } = await createNews(newsData);
@@ -230,6 +253,7 @@ const Admin = ({ isAdmin }) => {
             });
             setNewsImages([]);
             setNewsImagesPreviews([]);
+            setNewsFiles([]);
             setNewsDateInput(today.toISOString().split('T')[0]);
             setPreviewData(null);
         } catch (error) {
@@ -246,6 +270,10 @@ const Admin = ({ isAdmin }) => {
             images: newsImagesPreviews.map((preview, idx) => ({
                 src: preview,
                 alt: `Preview ${idx + 1}`
+            })),
+            files: (newsFiles || []).map(file => ({
+                url: URL.createObjectURL(file),
+                name: file.name
             })),
             videoUrl: newNews.videoUrl,
             id: 999
@@ -437,7 +465,7 @@ const Admin = ({ isAdmin }) => {
                             onChange={(e) => setNewNews({ ...newNews, videoUrl: e.target.value })}
                         />
 
-                        {/* FILE UPLOAD MULTIPLE */}
+                        {/* FILE UPLOAD MULTIPLE IMAGES */}
                         <div>
                             <label className="block font-semibold mb-2">Immagini (opzionale)</label>
                             <input
@@ -452,6 +480,28 @@ const Admin = ({ isAdmin }) => {
                                     {newsImagesPreviews.map((preview, idx) => (
                                         <img key={idx} src={preview} alt={`Preview ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
                                     ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* FILE UPLOAD DOCUMENTS */}
+                        <div>
+                            <label className="block font-semibold mb-2">Allegati (PDF, Word, Excel - opzionale)</label>
+                            <input
+                                type="file"
+                                multiple
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                                onChange={handleNewsFilesChange}
+                                className="p-[12px] border border-[#ddd] rounded-[8px] w-full"
+                            />
+                            {newsFiles.length > 0 && (
+                                <div className="mt-2 text-sm text-gray-600">
+                                    <p className="font-semibold">File selezionati:</p>
+                                    <ul className="list-disc pl-5">
+                                        {newsFiles.map((file, idx) => (
+                                            <li key={idx}>{file.name}</li>
+                                        ))}
+                                    </ul>
                                 </div>
                             )}
                         </div>

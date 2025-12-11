@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { uploadMultipleImages } from '../lib/cloudinary/upload';
+import { uploadMultipleImages, uploadMultipleFiles } from '../lib/cloudinary/upload';
 import Carousel from './ui/Carousel';
 import Lightbox from './ui/Lightbox';
 
 const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({ ...data });
+  const [editedData, setEditedData] = useState({ 
+      ...data, 
+      images: data.images || [], 
+      files: data.files || [] 
+  });
   const [isUploading, setIsUploading] = useState(false);
+  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   // Handle window resize for mobile detection
@@ -20,8 +25,10 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
   const handleSave = async () => {
     setIsUploading(true);
     try {
-      const newImagesToUpload = editedData.images.filter(img => img.file);
-      let updatedImages = [...editedData.images];
+      // 1. Upload Images
+      const currentImages = editedData.images || [];
+      const newImagesToUpload = currentImages.filter(img => img.file);
+      let updatedImages = [...currentImages];
 
       if (newImagesToUpload.length > 0) {
         const filesToUpload = newImagesToUpload.map(img => img.file);
@@ -44,7 +51,32 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
         });
       }
 
-      const finalData = { ...editedData, images: updatedImages };
+      // 2. Upload Files (Documents)
+      const newFilesToUpload = (editedData.files || []).filter(f => f.file);
+      let updatedFiles = [...(editedData.files || [])];
+
+      if (newFilesToUpload.length > 0) {
+        const docsToUpload = newFilesToUpload.map(f => f.file);
+        const { files, error } = await uploadMultipleFiles(docsToUpload);
+
+        if (error) {
+            alert('Errore caricamento documenti: ' + error);
+            setIsUploading(false);
+            return;
+        }
+
+        let uploadIndex = 0;
+        updatedFiles = updatedFiles.map(f => {
+            if (f.file) {
+                const uploaded = files[uploadIndex];
+                uploadIndex++;
+                return { url: uploaded.url, name: uploaded.name };
+            }
+            return f;
+        });
+      }
+
+      const finalData = { ...editedData, images: updatedImages, files: updatedFiles };
       await onEdit(data.id, finalData);
       setEditedData(finalData);
       setIsEditing(false);
@@ -57,8 +89,29 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
   };
 
   const handleImageDelete = (index) => {
-    const newImages = editedData.images.filter((_, i) => i !== index);
+    const currentImages = editedData.images || [];
+    const newImages = currentImages.filter((_, i) => i !== index);
     setEditedData({ ...editedData, images: newImages });
+  };
+
+  const handleFileDelete = (index) => {
+      const newFiles = (editedData.files || []).filter((_, i) => i !== index);
+      setEditedData({ ...editedData, files: newFiles });
+  };
+
+  const handleFilesChange = (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+          const files = Array.from(e.target.files);
+          const newFiles = files.map(file => ({
+              name: file.name,
+              url: '', // Temp placeholder
+              file: file
+          }));
+          setEditedData(prev => ({
+              ...prev,
+              files: [...(prev.files || []), ...newFiles]
+          }));
+      }
   };
 
   const getYouTubeId = (url) => {
@@ -75,17 +128,22 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
 
   // --- File Input Handler ---
   const handleFileInputChange = (e) => {
-      if (e.target.files && e.target.files.length > 0) {
-          const files = Array.from(e.target.files);
-          const newImages = files.map(file => ({
-              src: URL.createObjectURL(file),
-              alt: file.name,
-              file: file
-          }));
-          setEditedData(prev => ({
-              ...prev,
-              images: [...prev.images, ...newImages]
-          }));
+      try {
+          if (e.target.files && e.target.files.length > 0) {
+              const files = Array.from(e.target.files);
+              const newImages = files.map(file => ({
+                  src: URL.createObjectURL(file),
+                  alt: file.name,
+                  file: file
+              }));
+              setEditedData(prev => ({
+                  ...prev,
+                  images: [...(prev.images || []), ...newImages]
+              }));
+          }
+      } catch (error) {
+          console.error("Error adding images:", error);
+          alert("Errore durante l'aggiunta delle immagini");
       }
   };
 
@@ -101,7 +159,7 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
       }));
       setEditedData(prev => ({
         ...prev,
-        images: [...prev.images, ...newImages]
+        images: [...(prev.images || []), ...newImages]
       }));
     }
   };
@@ -120,7 +178,7 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
     e.preventDefault();
     e.stopPropagation();
     if (draggedItemIndex === null || draggedItemIndex === targetIndex) return;
-    const newImages = [...editedData.images];
+    const newImages = [...(editedData.images || [])];
     const draggedItem = newImages[draggedItemIndex];
     newImages.splice(draggedItemIndex, 1);
     newImages.splice(targetIndex, 0, draggedItem);
@@ -140,7 +198,7 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
       (!isMobile && editedData.images.length > 5)
   );
 
-  const displayImages = editedData.images;
+  const displayImages = editedData.images || [];
 
   return (
     <>
@@ -210,6 +268,33 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
                         />
                     </div>
 
+                    {/* Add Documents Button */}
+                    <div className="flex flex-col gap-[10px]">
+                        <label className="font-[600] text-[#333]">Aggiungi Allegati (PDF, Doc):</label>
+                        <input 
+                            type="file" 
+                            multiple 
+                            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                            onChange={handleFilesChange}
+                            className="p-[10px] border-2 border-[#eee] rounded-[10px] text-[1rem] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#66CBFF] file:text-white hover:file:bg-[#4facfe]"
+                        />
+                    </div>
+
+                    {/* Edit Files List */}
+                    {editedData.files && editedData.files.length > 0 && (
+                        <div className="flex flex-col gap-2 w-full">
+                            <p className="font-semibold">Allegati:</p>
+                            {editedData.files.map((file, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
+                                    <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                                    <button onClick={() => handleFileDelete(idx)} className="text-red-500 hover:text-red-700 font-bold px-2">
+                                        🗑️
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     <button onClick={handleSave} disabled={isUploading} className={`bg-gradient-to-br from-[#66CBFF] to-[#4facfe] text-white border-none px-[30px] py-[15px] rounded-[50px] cursor-pointer font-[800] self-start uppercase tracking-[1px] shadow-[0_10px_20px_rgba(102,203,255,0.3)] transition-all hover:-translate-y-[3px] hover:shadow-[0_15px_30px_rgba(102,203,255,0.4)] ${isUploading ? 'opacity-70 cursor-wait' : ''}`}>
                         {isUploading ? 'Salvataggio...' : 'Salva Modifiche Card'}
                     </button>
@@ -267,6 +352,31 @@ const NewsCard = ({ data, isAdmin, onDelete, onEdit }) => {
                             </div>
                         )}
                     </>
+                )}
+
+                {/* Files Section (View Mode) */}
+                {!isEditing && data.files && data.files.length > 0 && (
+                    <div className="mt-4 border-t border-gray-100 pt-4">
+                        <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                            📎 Allegati
+                        </h4>
+                        <div className="flex flex-wrap gap-3">
+                            {data.files.map((file, idx) => (
+                                <a 
+                                    key={idx} 
+                                    href={file.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 bg-gray-50 hover:bg-[#66CBFF]/10 border border-gray-200 hover:border-[#66CBFF] px-4 py-2 rounded-lg transition-all group"
+                                >
+                                    <span className="text-2xl">📄</span>
+                                    <span className="text-sm font-medium text-gray-700 group-hover:text-[#66CBFF] underline decoration-transparent group-hover:decoration-[#66CBFF] transition-all">
+                                        {file.name}
+                                    </span>
+                                </a>
+                            ))}
+                        </div>
+                    </div>
                 )}
             </div>
         </div>
