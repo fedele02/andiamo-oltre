@@ -35,13 +35,13 @@ const ContactForm = ({ isAdmin }) => {
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
 
-        // Max 3 images
-        if (images.length + files.length > 3) {
-            alert('Puoi caricare massimo 3 immagini!');
+        // Max 5 images
+        if (images.length + files.length > 5) {
+            alert('Puoi caricare massimo 5 immagini!');
             return;
         }
 
-        setImages(prev => [...prev, ...files].slice(0, 3));
+        setImages(prev => [...prev, ...files].slice(0, 5));
     };
 
     const removeImage = (index) => {
@@ -251,7 +251,7 @@ const ContactForm = ({ isAdmin }) => {
 
                         <div className="flex flex-col">
                             <label htmlFor="images" className="mb-2 font-medium text-gray-700">
-                                Carica immagini (opzionale - max 3)
+                                Carica immagini (opzionale - max 5)
                             </label>
                             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-accent transition-colors text-center cursor-pointer bg-gray-50">
                                 <input
@@ -265,7 +265,7 @@ const ContactForm = ({ isAdmin }) => {
                                 />
                                 <div className="text-gray-500">
                                     <span className="text-accent font-medium">Clicca per caricare</span> o trascina qui
-                                    <p className="text-sm mt-1">Massimo 3 immagini</p>
+                                    <p className="text-sm mt-1">Massimo 5 immagini (10mb)</p>
                                 </div>
                             </div>
 

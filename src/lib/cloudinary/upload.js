@@ -1,4 +1,5 @@
 import SHA1 from 'crypto-js/sha1';
+import { LIMITS } from '../../globals/constants';
 
 /**
  * Upload an image to Cloudinary
@@ -6,6 +7,14 @@ import SHA1 from 'crypto-js/sha1';
  * @returns {Promise<{url, error}>}
  */
 export async function uploadImage(file) {
+    // Check file size
+    if (file.size > LIMITS.fileSize.image) {
+        return {
+            url: null,
+            error: `Il file ${file.name} supera il limite di 10MB per le immagini.`
+        };
+    }
+
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
 
@@ -48,6 +57,20 @@ export async function uploadImage(file) {
  * @returns {Promise<{url, name, error}>}
  */
 export async function uploadFile(file) {
+    // Check file size based on type
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    
+    if (isImage && file.size > LIMITS.fileSize.image) {
+        return { url: null, error: `Il file ${file.name} supera il limite di 10MB per le immagini.` };
+    }
+    if (isVideo && file.size > LIMITS.fileSize.video) {
+        return { url: null, error: `Il file ${file.name} supera il limite di 100MB per i video.` };
+    }
+    if (!isImage && !isVideo && file.size > LIMITS.fileSize.raw) {
+        return { url: null, error: `Il file ${file.name} supera il limite di 10MB per i documenti.` };
+    }
+
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
 

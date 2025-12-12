@@ -28,8 +28,13 @@ export const PLACEHOLDER = {
 
 // Limiti per immagin
 export const LIMITS = {
-    contactImages: 3,
-    newsImages: Infinity 
+    contactImages: 5,
+    newsImages: Infinity,
+    fileSize: {
+        image: 10 * 1024 * 1024, // 10MB
+        video: 100 * 1024 * 1024, // 100MB
+        raw: 10 * 1024 * 1024 // 10MB
+    }
 };
 
 

@@ -48,18 +48,6 @@ const Navbar = ({ isAdmin }) => {
                         </li>
                         <li>
                             <Link
-                                to="/proposte"
-                                className={`text-sm font-semibold py-2 px-4 rounded-lg transition-all ${isActive('/proposte')
-                                    ? 'text-accent bg-accent/10'
-                                    : 'text-gray-700 hover:text-accent hover:bg-gray-50'
-                                    }`}
-                                onClick={closeMenu}
-                            >
-                                Nostre Proposte
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
                                 to="/membri"
                                 className={`text-sm font-semibold py-2 px-4 rounded-lg transition-all ${isActive('/membri')
                                     ? 'text-accent bg-accent/10'
@@ -68,6 +56,18 @@ const Navbar = ({ isAdmin }) => {
                                 onClick={closeMenu}
                             >
                                 Membri
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                to="/proposte"
+                                className={`text-sm font-semibold py-2 px-4 rounded-lg transition-all ${isActive('/proposte')
+                                    ? 'text-accent bg-accent/10'
+                                    : 'text-gray-700 hover:text-accent hover:bg-gray-50'
+                                    }`}
+                                onClick={closeMenu}
+                            >
+                                Nostre Proposte
                             </Link>
                         </li>
                         <li>
