@@ -1,5 +1,4 @@
 ﻿import React, { useState, useEffect } from 'react';
-import logo from '../assets/logo.png';
 import { useAppData } from '../context/AppContext';
 import { updateContent } from '../lib/supabase/content';
 
@@ -46,7 +45,7 @@ const Home = ({ isAdmin }) => {
                 {/* Soft Blue Glow behind Logo */}
                 <div className="absolute w-[280px] h-[280px] md:w-[400px] md:h-[400px] bg-[#66CBFF]/30 rounded-full blur-[60px] pointer-events-none z-0"></div>
                 
-                <img src={logo} alt="Logo Partito" className="w-[240px] h-[240px] md:w-[350px] md:h-[350px] rounded-full object-cover shadow-[0_0_50px_rgba(102,203,255,0.6)] transition-transform duration-500 animate-float relative z-10" />
+                <img src="/logooltresvg.svg" alt="Logo Partito" className="w-[240px] h-[240px] md:w-[350px] md:h-[350px] rounded-full object-cover shadow-[0_0_50px_rgba(102,203,255,0.6)] transition-transform duration-500 animate-float relative z-10" />
             </div>
 
             <div className={`text-center relative px-4 md:px-10 pb-[100px] mx-auto transition-all duration-300 ${isEditing ? 'w-full max-w-[95vw]' : 'max-w-[1000px]'}`}>

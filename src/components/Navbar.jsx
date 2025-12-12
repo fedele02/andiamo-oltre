@@ -27,9 +27,9 @@ const Navbar = ({ isAdmin }) => {
                     {/* Logo */}
                     <Link
                         to="/"
-                        className="font-extrabold tracking-tight font-title uppercase hover:opacity-80 transition-opacity flex items-baseline gap-1"
+                        className="font-extrabold tracking-tight font-title hover:opacity-80 transition-opacity flex items-baseline gap-0"
                     >
-                        <span className="text-black text-xl">andiamo</span> <span className="text-[#66CBFF] text-3xl">OLTRE...</span>
+                        <span className="text-black text-xl uppercase">andiamo</span> <span className="text-[#66CBFF] text-3xl uppercase">OLTRE...</span>
                     </Link>
 
                     {/* Desktop Menu */}
@@ -79,7 +79,7 @@ const Navbar = ({ isAdmin }) => {
                                     }`}
                                 onClick={closeMenu}
                             >
-                                Parla con Noi
+                                Vostre segnalazioni
                             </Link>
                         </li>
 
@@ -169,7 +169,7 @@ const Navbar = ({ isAdmin }) => {
                                     }`}
                                 onClick={closeMenu}
                             >
-                                Parla con Noi
+                                Vostre segnalazioni
                             </Link>
                         </li>
 
